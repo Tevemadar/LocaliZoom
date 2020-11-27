@@ -1,0 +1,187 @@
+var filmstrip={};
+
+(function(){
+    var cache=new LRUCache(20);
+    
+    var canvaswidth=0;
+    var canvasheight=0;
+    this.setwidth=function(width){canvaswidth=width;redraw();return width;};
+    this.setheight=function(height){canvasheight=height;redraw();return height;};
+
+    var volumeready=false;
+    this.start=function(){
+        initvol(locators.AtlasVolumeLocator(args.atlas),volumeReady);
+    };
+    var seriescount=0;
+    function volumeReady(event){
+        volumeready=true;
+        args.series.split(",").forEach(function(series){
+            var xhr=new XMLHttpRequest();
+            xhr.open("GET",locators.SeriesLocator(series));
+            xhr.responseType="json";
+            xhr.onload=seriesReady;
+            xhr.send();
+            seriescount++;
+        });
+    }
+    
+    var arry=[];
+//    var allnumbered=true;
+    this.getmeta=function(){return arry;};
+    function seriesReady(event){
+        for(let slice of event.target.response.slices){
+            let id=slice.filename;
+            let pos=id.lastIndexOf(".");
+            if(pos>=0)
+                id=id.substring(0,pos)+".tif";
+            arry.push({
+                id:id,
+                s:slice.nr,
+                w:slice.width,
+                h:slice.height,
+                ox:slice.anchoring[0],
+                oy:slice.anchoring[1],
+                oz:slice.anchoring[2],
+                ux:slice.anchoring[3],
+                uy:slice.anchoring[4],
+                uz:slice.anchoring[5],
+                vx:slice.anchoring[6],
+                vy:slice.anchoring[7],
+                vz:slice.anchoring[8]
+            });
+        }
+        seriescount--;
+        if(seriescount===0)
+            allSeriesReady();
+    }
+    function allSeriesReady(){
+        arry.sort(function(a,b){
+            return a.s-b.s;
+        });
+        metaReady(function(){
+            idx=Math.floor(arry.length/2);
+            pos=Math.max(0,idx*160-canvaswidth/2+72);
+            dispatchOuv(arry[idx]);
+
+            redraw();
+            loadloop=0;
+            load();
+        });
+        
+//        idx=Math.floor(arry.length/2);
+//        pos=Math.max(0,idx*160-canvaswidth/2+72);
+//        dispatchOuv(arry[idx]);
+//        
+//        redraw();
+//        loadloop=0;
+//        load();
+    };
+    this.prev=function(){
+        if(idx>0){
+            idx--;
+            pos=Math.max(0,idx*160-canvaswidth/2+72);
+            dispatchOuv(arry[idx]);
+            redraw();
+        }
+    };
+    this.next=function(){
+        if(idx<arry.length-1){
+            idx++;
+            pos=Math.max(0,idx*160-canvaswidth/2+72);
+            dispatchOuv(arry[idx]);
+            redraw();
+        }
+    };
+    var loadloop;
+    function load(){
+        if(loadloop<arry.length){
+            var img=document.createElement("img");
+            arry[loadloop].img=img;
+            img.onload=function(){
+                if((loadloop>=start)&&(loadloop<=end))
+                    redraw();
+                loadloop++;
+                load();
+            };
+            img.src=locators.ThumbLocator(arry[loadloop].id);
+        }
+    }
+    var pos=0;
+    var start=0;
+    var end=-1;
+    var alpha=0.3;
+    this.setalpha=function(newalpha){alpha=newalpha;};
+    var idx;
+    function redraw(){
+        if(!volumeready)return;
+        start=Math.floor((pos-128)/160);
+        if(start<0)start=0;
+        end=Math.floor((pos+(canvaswidth-20))/160);
+        if(end>=arry.length)end=arry.length-1;
+        var ctx=document.getElementById("scroller").getContext("2d");
+        ctx.globalAlpha=1;
+        ctx.fillStyle="#FFFFFF";
+        ctx.fillRect(0,0,canvaswidth,canvasheight);
+        for(var x=start;x<=end;x++){
+            var item=arry[x];
+            var id=item.id;
+            var img=item.img;
+            var ovly=cache.get(id);
+            if(!ovly)ovly=slice(item);
+            cache.put(id,ovly);
+            ctx.globalAlpha=1;
+            if(idx===x){
+                ctx.fillStyle="#00FF00";
+                ctx.fillRect(x*160-pos+20-10,20,128+10+10,128);
+            }
+            if(img){
+                ctx.drawImage(img,x*160-pos+20,20);
+                ctx.globalAlpha=alpha;
+                ctx.drawImage(ovly,x*160-pos+20,20,img.width,img.height);
+            }
+            else
+                ctx.drawImage(ovly,x*160-pos+20,20,128,128);
+        }
+        ctx.clearRect(0,0,20,128+20);
+        ctx.lineStyle="black";
+        ctx.fillStyle="#0000FF";
+        ctx.globalAlpha=1;
+        ctx.strokeRect(0,Math.round(20+118*alpha)+0.5,20,10);
+        ctx.clearRect(0,0,canvaswidth,20);
+        ctx.strokeRect(20,0,canvaswidth-20,20);
+        var len=arry.length*160-34;
+        ctx.fillRect(20+pos*(canvaswidth-20)/len,0,(canvaswidth-20)*(canvaswidth-20)/len,20);
+    }
+    
+    this.mwheel=function(event){
+        if(event.offsetX<20){
+            alpha+=event.deltaY>0?0.05:-0.05;
+            alpha=Math.max(0,Math.min(1,alpha));
+        }else{
+            pos+=event.deltaY<0?100:-100;
+            pos=Math.max(0,Math.min(pos,arry.length*160-canvaswidth-34+20));
+        }
+        redraw();
+    };
+    this.mclick=function(event){
+        if(event.offsetX<20){
+            if(event.offsetY<20){
+                alpha=alpha===0?1:0;
+            } else {
+                alpha=(event.offsetY-20)/118;
+            }
+            redraw();
+            return;
+        }
+        if(event.offsetY<20){
+            var len=arry.length*160-34;
+            pos=(event.offsetX-20-(canvaswidth-20)*(canvaswidth-20)/len/2)*len/(canvaswidth-20);
+            pos=Math.max(0,Math.min(pos,arry.length*160-canvaswidth-34+20));
+            redraw();
+            return;
+        }
+        idx=Math.floor((pos+event.offsetX-20+(160-128)/2)/160);
+        dispatchOuv(arry[idx]);
+        redraw();
+    };
+}).apply(filmstrip);
