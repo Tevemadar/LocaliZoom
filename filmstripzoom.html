@@ -141,12 +141,12 @@
                 DZILocator:function(section_id){
                     return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
                             args.pyramids+"/"+
-                            section_id+".xml";
+                            section_id.substring(0,section_id.length-4)+".xml";
                 },
                 TileLocator:function(section_id,level,x,y,format){
                     return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
                             args.pyramids+"/"+
-                            section_id+"_files/"+
+                            section_id.substring(0,section_id.length-4)+"_files/"+
                             level+"/"+x+"_"+y+".png";
                 }
             };
@@ -435,7 +435,7 @@
                 triangulate();
                 
                 var meta=document.getElementById("metadata");
-                meta.innerHTML=ouv.name+"<br>"+cfg.Width.toString()+" x "+cfg.Height.toString()+"<br>"
+                meta.innerHTML=/*ouv.name*/section_id+"<br>"+cfg.Width.toString()+" x "+cfg.Height.toString()+"<br>"
                         +atlas.name
                         +(args.prev?"":("<br><a href='http://cmbn-navigator.uio.no/navigator/feeder/original/?id="+section_id+"' target='_blank'>Download image</a>"));
                 meta.style.left=window.innerWidth-meta.scrollWidth-5+"px";
@@ -812,23 +812,25 @@
                 d.close();
             }
             
-            function metaReady(callback){
-                var xhr=new XMLHttpRequest();
-                xhr.open("GET",args.series+".json");
-//                xhr.responseType="json";
-                xhr.onload=function(){
-                    if(xhr.status===200)
-                        loadMarkers(xhr.responseText);
-                    callback();
-                };
-                xhr.send();
+            function metaReady(metahack,callback){
+                loadMarkers(metahack);
+                callback();
+//                var xhr=new XMLHttpRequest();
+//                xhr.open("GET",args.series+".json");
+////                xhr.responseType="json";
+//                xhr.onload=xhr.onerror=function(){
+//                    if(xhr.status===200)
+//                        loadMarkers(xhr.responseText);
+//                    callback();
+//                };
+//                xhr.send();
             }
             
             function loadMarkers(data){
                 var meta=filmstrip.getmeta();
                 allmarkers={};
                 var uglymeta={};
-                data=JSON.parse(data);
+//                data=JSON.parse(data);
                 if(Array.isArray(data)){ // own format
                     meta.forEach(function(m){uglymeta[m.id]=m;delete m.vam;});
                     data.forEach(function(section){
@@ -840,12 +842,12 @@
                     });
                 } else { // VisuAlign format
                     var r=/_s(\d+)/;
-                    meta.forEach(function(m){uglymeta[allnumbered?m.s:m.name]=m;});
+                    meta.forEach(function(m){uglymeta[m.s/*allnumbered?m.s:m.name*/]=m;});
                     data.slices.forEach(function(section){
                         var name=section.filename;
 //                        name=name.substring(0,name.lastIndexOf("."));
                         //var meta=uglymeta[name];
-                        var meta=uglymeta[allnumbered?parseInt(r.exec(name)[1]):name.substring(0,name.lastIndexOf("."))];
+                        var meta=uglymeta[/*allnumbered?*/parseInt(r.exec(name)[1])/*:name.substring(0,name.lastIndexOf("."))*/];
 if(!meta){
   var frag=name.substring(0,name.lastIndexOf("."));
   filmstrip.getmeta().forEach(function(m){

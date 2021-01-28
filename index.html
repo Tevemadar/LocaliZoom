@@ -3,10 +3,27 @@
     <head>
         <meta charset="UTF-8">
         <title>Setup</title>
+        <style>
+            input{
+                width:80%;
+            }
+        </style>
     </head>
     <body>
-        <input type="text" id="json" placeholder="Complete URL" value="https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json"> https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json<br>
-        <input type="text" id="pyramids" placeholder="Container only" value="imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f"> imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f<br>
-        <button onclick="location.href='filmstripzoom.html?series='+json.value+'&amp;pyramids='+pyramids.value">Go</button>
+<!--        <input type="text" id="json" placeholder="Complete URL" value="https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json"> https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json<br>
+        <input type="text" id="pyramids" placeholder="Container only" value="imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f"> imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f<br>-->
+        <input type="text" id="json" placeholder="Complete URL for JSON, https://object.cscs.ch/.../xy.json"><br>
+        <input type="text" id="pyramids" placeholder="Container ID only, like imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f"><br>
+        <select id="atlas">
+            <option value="WHS_Rat_v2_39um">WHS Rat v2 39um</option>
+            <option value="ABA_Mouse_CCFv3_2017_25um">AMBA CCFv3 2017 25um</option>
+        </select>
+        <button onclick="location.href='filmstripzoom.html?atlas='+atlas.value+'&series='+json.value+'&amp;pyramids='+pyramids.value">Go</button>
+        <hr>
+<!--        <a href="filmstripzoom.html?atlas=WHS_Rat_v2_39um&series=https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json&pyramids=imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f">R604</a>-->
+        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C12_anchoring_nonlinear.json&pyramids=imgsvc-18c550ef-2a8e-9492-3638-36d038653f94">C12</a>
+        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C16_anchoring_nonlinear.json&pyramids=imgsvc-ee8c383a-32c4-bb3f-e6dc-cbb544f16fb1">C16</a>
+        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C17_anchoring_nonlinear.json&pyramids=imgsvc-ba14522f-db2a-1304-94b9-a0bf73c81656">C17</a>
+        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C19_anchoring_nonlinear.json&pyramids=imgsvc-7274cfc1-e882-1b35-e4a7-6514d47d8216">C19</a>
     </body>
 </html>

@@ -28,7 +28,9 @@ var filmstrip={};
     var arry=[];
 //    var allnumbered=true;
     this.getmeta=function(){return arry;};
+    var metahack;
     function seriesReady(event){
+        metahack=event.target.response;//.slices;
         for(let slice of event.target.response.slices){
             let id=slice.filename;
             let pos=id.lastIndexOf(".");
@@ -58,7 +60,7 @@ var filmstrip={};
         arry.sort(function(a,b){
             return a.s-b.s;
         });
-        metaReady(function(){
+        metaReady(metahack,function(){
             idx=Math.floor(arry.length/2);
             pos=Math.max(0,idx*160-canvaswidth/2+72);
             dispatchOuv(arry[idx]);
