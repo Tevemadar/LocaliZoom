@@ -66,8 +66,8 @@ var filmstrip={};
             dispatchOuv(arry[idx]);
 
             redraw();
-            loadloop=0;
-            load();
+//            loadloop=0;
+//            load();
         });
         
 //        idx=Math.floor(arry.length/2);
@@ -94,20 +94,20 @@ var filmstrip={};
             redraw();
         }
     };
-    var loadloop;
-    function load(){
-        if(loadloop<arry.length){
-            var img=document.createElement("img");
-            arry[loadloop].img=img;
-            img.onload=function(){
-                if((loadloop>=start)&&(loadloop<=end))
-                    redraw();
-                loadloop++;
-                load();
-            };
-            img.src=locators.ThumbLocator(arry[loadloop].id);
-        }
-    }
+//    var loadloop;
+//    function load(){
+//        if(loadloop<arry.length){
+//            var img=document.createElement("img");
+//            arry[loadloop].img=img;
+//            img.onload=function(){
+//                if((loadloop>=start)&&(loadloop<=end))
+//                    redraw();
+//                loadloop++;
+//                load();
+//            };
+//            img.src=locators.ThumbLocator(arry[loadloop].id);
+//        }
+//    }
     var pos=0;
     var start=0;
     var end=-1;
@@ -127,7 +127,6 @@ var filmstrip={};
         for(var x=start;x<=end;x++){
             var item=arry[x];
             var id=item.id;
-            var img=item.img;
             var ovly=cache.get(id);
             if(!ovly)ovly=slice(item);
             cache.put(id,ovly);
@@ -136,13 +135,18 @@ var filmstrip={};
                 ctx.fillStyle="#00FF00";
                 ctx.fillRect(x*160-pos+20-10,20,128+10+10,128);
             }
-            if(img){
-                ctx.drawImage(img,x*160-pos+20,20);
-                ctx.globalAlpha=alpha;
-                ctx.drawImage(ovly,x*160-pos+20,20,img.width,img.height);
-            }
+            if(ovly.width>=ovly.height)
+                ctx.drawImage(ovly,x*160-pos+20,20,128,128*ovly.height/ovly.width);
             else
-                ctx.drawImage(ovly,x*160-pos+20,20,128,128);
+                ctx.drawImage(ovly,x*160-pos+20,20,128*ovly.width/ovly.height,128);
+//            var img=item.img;
+//            if(img){
+//                ctx.drawImage(img,x*160-pos+20,20);
+//                ctx.globalAlpha=alpha;
+//                ctx.drawImage(ovly,x*160-pos+20,20,img.width,img.height);
+//            }
+//            else
+//                ctx.drawImage(ovly,x*160-pos+20,20,128,128);
         }
         ctx.clearRect(0,0,20,128+20);
         ctx.lineStyle="black";
