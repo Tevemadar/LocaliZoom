@@ -49,7 +49,8 @@ var filmstrip={};
                 uz:slice.anchoring[5],
                 vx:slice.anchoring[6],
                 vy:slice.anchoring[7],
-                vz:slice.anchoring[8]
+                vz:slice.anchoring[8],
+                icon:null
             });
         }
         seriescount--;
@@ -125,7 +126,7 @@ var filmstrip={};
         ctx.fillStyle="#FFFFFF";
         ctx.fillRect(0,0,canvaswidth,canvasheight);
         for(var x=start;x<=end;x++){
-            var item=arry[x];
+            let item=arry[x];
             var id=item.id;
             var ovly=cache.get(id);
             if(!ovly)ovly=slice(item);
@@ -135,10 +136,49 @@ var filmstrip={};
                 ctx.fillStyle="#00FF00";
                 ctx.fillRect(x*160-pos+20-10,20,128+10+10,128);
             }
-            if(ovly.width>=ovly.height)
-                ctx.drawImage(ovly,x*160-pos+20,20,128,128*ovly.height/ovly.width);
-            else
-                ctx.drawImage(ovly,x*160-pos+20,20,128*ovly.width/ovly.height,128);
+            if(item.icon===null){
+                item.icon=new XMLHttpRequest();
+                item.icon.open("GET",locators.DZILocator(item.id));
+                item.icon.onload=function(event){
+                    var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
+                    var tilesize=parseInt(doc.getAttribute("TileSize"));
+                    var size=doc.getElementsByTagName("Size").item(0);
+                    var width=parseInt(size.getAttribute("Width"));
+                    var height=parseInt(size.getAttribute("Height"));
+                    console.log(tilesize,width,height,item.id);
+                    var level=0;
+                    while(width>=tilesize || height>=tilesize){
+                        level++;
+                        width=(width+1)>>1;
+                        height=(height+1)>>1;
+                    }
+                    var img=document.createElement("img");
+                    img.onload=function(event){
+                        item.icon=img;
+                        redraw();
+                        console.log(""+item.icon);
+                    };
+                    img.src=locators.TileLocator(item.id,level,0,0,doc.getAttribute("Format"));
+                };
+                item.icon.send();
+            }
+            if(item.icon instanceof HTMLImageElement){
+                if(item.icon.width>=item.icon.height){
+                    ctx.drawImage(item.icon,x*160-pos+20,20,128,128*item.icon.height/item.icon.width);
+                    ctx.globalAlpha=alpha;
+                    ctx.drawImage(ovly,x*160-pos+20,20,128,128*item.icon.height/item.icon.width);
+                }
+                else{
+                    ctx.drawImage(item.icon,x*160-pos+20,20,128*item.icon.width/item.icon.height,128);
+                    ctx.globalAlpha=alpha;
+                    ctx.drawImage(ovly,x*160-pos+20,20,128*item.icon.width/item.icon.height,128);
+                }
+            }else{
+                if(ovly.width>=ovly.height)
+                    ctx.drawImage(ovly,x*160-pos+20,20,128,128*ovly.height/ovly.width);
+                else
+                    ctx.drawImage(ovly,x*160-pos+20,20,128*ovly.width/ovly.height,128);
+            }
 //            var img=item.img;
 //            if(img){
 //                ctx.drawImage(img,x*160-pos+20,20);
