@@ -145,7 +145,7 @@ var filmstrip={};
                     var size=doc.getElementsByTagName("Size").item(0);
                     var width=parseInt(size.getAttribute("Width"));
                     var height=parseInt(size.getAttribute("Height"));
-                    console.log(tilesize,width,height,item.id);
+//                    console.log(tilesize,width,height,item.id);
                     var level=0;
                     while(width>=tilesize || height>=tilesize){
                         level++;
@@ -156,7 +156,7 @@ var filmstrip={};
                     img.onload=function(event){
                         item.icon=img;
                         redraw();
-                        console.log(""+item.icon);
+//                        console.log(""+item.icon);
                     };
                     img.src=locators.TileLocator(item.id,level,0,0,doc.getAttribute("Format"));
                 };

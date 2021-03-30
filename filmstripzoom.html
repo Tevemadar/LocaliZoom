@@ -16,8 +16,8 @@
             #outlinedesc{float:right;padding-right: 5px;}
             #alpha{float:right;height: 15px;width: 100px;}
             #alphadesc{float:right;padding-right: 5px;}
-            #bright{float:right;height: 15px;width: 100px;}
-            #brightdesc{float:right;padding-right: 5px;}
+/*            #bright{float:right;height: 15px;width: 100px;}
+            #brightdesc{float:right;padding-right: 5px;}*/
             #tools{background: #F0F0F0;height: 20px;padding: 5px;}
             #toolsinner{display: none;}
             #helpbutton{float: right;padding: 5px;}
@@ -129,11 +129,11 @@
             // CSCS
             var locators={
                 SeriesLocator:function(series_id){return series_id;},
-                ThumbLocator:function(section_id){
-                    return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
-                            args.pyramids+"/"+
-                            section_id+".png";
-                },
+//                ThumbLocator:function(section_id){
+//                    return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
+//                            args.pyramids+"/"+
+//                            section_id+".png";
+//                },
                 
                 AtlasLocator:function(atlas_id){return atlas_id+".json";},
                 AtlasVolumeLocator:function(atlas_id){return atlas_id+".pack";},
@@ -141,12 +141,14 @@
                 DZILocator:function(section_id){
                     return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
                             args.pyramids+"/"+
-                            section_id.substring(0,section_id.length-4)+(location.search.includes("&xml")?".xml":".dzi");
+                            section_id+"/"+
+                            section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
                 },
                 TileLocator:function(section_id,level,x,y,format){
                     return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
                             args.pyramids+"/"+
-                            section_id.substring(0,section_id.length-4)+"_files/"+
+                            section_id+"/"+
+                            section_id.substring(0,section_id.lastIndexOf("."))+"_files/"+
                             level+"/"+x+"_"+y+".png";
                 }
             };
@@ -176,10 +178,13 @@
                    pair=pair.split("=");
                    args[pair[0]]=pair[1] || true;
                 });
-        
+                if(args.view){
+                    filmstrip.setalpha(0);
+                }
+                args.view=!args.tools;
+                args.prev=true;
                 if(args.view){
                     document.getElementById("tools").style.display="none";
-                    filmstrip.setalpha(0);
                 }
                 if(args.opacity){
                     document.getElementById("alpha").value=args.opacity;
@@ -467,14 +472,14 @@
                     img.src=key;
                 };
                 cfg.Overlay=function(ctx,cw,ch,x,y,w,h){
-                    var bright=parseInt(document.getElementById("bright").value);
-                    if(bright>1){
-                      var bdata=ctx.getImageData(0,0,cw,ch);
-                      var bdat=bdata.data;
-                      for(var i=0;i<cw*ch*4;i++)
-                        bdat[i]*=bright;
-                      ctx.putImageData(bdata,0,0);
-                    }
+//                    var bright=parseInt(document.getElementById("bright").value);
+//                    if(bright>1){
+//                      var bdata=ctx.getImageData(0,0,cw,ch);
+//                      var bdat=bdata.data;
+//                      for(var i=0;i<cw*ch*4;i++)
+//                        bdat[i]*=bright;
+//                      ctx.putImageData(bdata,0,0);
+//                    }
                     var ovltrgx=0;
                     var ovltrgy=0;
                     var ovltrgw=cw;
@@ -937,8 +942,8 @@ if(!meta){
     <body onload="startup()">
         <div id="status">
             <select id="traf"></select>
-            <input type="range" id="bright" min="1" max="20" step="0.2" value="1" onchange="drawImage()">
-            <div id="brightdesc">Brighten image:</div>
+<!--            <input type="range" id="bright" min="1" max="20" step="0.2" value="1" onchange="drawImage()">
+            <div id="brightdesc">Brighten image:</div>-->
             <input type="color" value="#0000FF" id="outline" onchange="handleOvly(event)">
             <div id="outlinedesc">Outline:</div>
             <input type="range" id="alpha" min="0" max="100" step="10" value="100" onchange="handleOvly(event)">
