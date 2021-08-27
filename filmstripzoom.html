@@ -142,13 +142,15 @@
                     return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
                             args.pyramids+"/"+
                             section_id+"/"+
-                            section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
+//                            section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
+                            section_id.substring(0,section_id.indexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
                 },
                 TileLocator:function(section_id,level,x,y,format){
                     return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
                             args.pyramids+"/"+
                             section_id+"/"+
                             section_id.substring(0,section_id.lastIndexOf("."))+"_files/"+
+//                            section_id.substring(0,section_id.indexOf("."))+"_files/"+
                             level+"/"+x+"_"+y+".png";
                 }
             };
@@ -168,7 +170,7 @@
                 if(zoomer)zoomer.fullcanvas();
             }
             
-            var args={atlas:"WHS_Rat_v2_39um"};
+            var args={atlas:"WHS_SD_Rat_v2_39um"};
             function startup(){
                 window.addEventListener("resize",fullscreen);
                 fullscreen();
@@ -850,9 +852,10 @@
                     meta.forEach(function(m){uglymeta[m.s/*allnumbered?m.s:m.name*/]=m;});
                     data.slices.forEach(function(section){
                         var name=section.filename;
+                        if(name){
 //                        name=name.substring(0,name.lastIndexOf("."));
                         //var meta=uglymeta[name];
-                        var meta=uglymeta[/*allnumbered?*/parseInt(r.exec(name)[1])/*:name.substring(0,name.lastIndexOf("."))*/];
+                        var meta=uglymeta[section.hasOwnProperty("nr")?section.nr:/*allnumbered?*/parseInt(r.exec(name)[1])/*:name.substring(0,name.lastIndexOf("."))*/];
 if(!meta){
   var frag=name.substring(0,name.lastIndexOf("."));
   filmstrip.getmeta().forEach(function(m){
@@ -873,6 +876,7 @@ if(!meta){
 //                            allmarkers[meta.id]=section.markers.map(function(marker){
 //                                return {x:marker[0],y:marker[1],nx:marker[2],ny:marker[3]};
 //                            });
+                        }
                     });
                     visualign();
                 }

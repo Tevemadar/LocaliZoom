@@ -12,26 +12,25 @@ var filmstrip={};
     this.start=function(){
         initvol(locators.AtlasVolumeLocator(args.atlas),volumeReady);
     };
-    var seriescount=0;
     function volumeReady(event){
         volumeready=true;
-        args.series.split(",").forEach(function(series){
-            var xhr=new XMLHttpRequest();
-            xhr.open("GET",locators.SeriesLocator(series));
-            xhr.responseType="json";
-            xhr.onload=seriesReady;
-            xhr.send();
-            seriescount++;
-        });
+        var xhr=new XMLHttpRequest();
+        xhr.open("GET",locators.SeriesLocator(args.series));
+        xhr.responseType="json";
+        xhr.onload=seriesReady;
+        xhr.send();
     }
     
     var arry=[];
-//    var allnumbered=true;
     this.getmeta=function(){return arry;};
     var metahack;
     function seriesReady(event){
         metahack=event.target.response;//.slices;
         for(let slice of event.target.response.slices){
+            if(!slice.hasOwnProperty("filename")){
+                alert("Series refers sections without corresponding image!");
+                break;
+            }
             let id=slice.filename;
             let pos=id.lastIndexOf(".");
             if(pos>=0)
@@ -53,14 +52,6 @@ var filmstrip={};
                 icon:null
             });
         }
-        seriescount--;
-        if(seriescount===0)
-            allSeriesReady();
-    }
-    function allSeriesReady(){
-        arry.sort(function(a,b){
-            return a.s-b.s;
-        });
         metaReady(metahack,function(){
             idx=Math.floor(arry.length/2);
             pos=Math.max(0,idx*160-canvaswidth/2+72);
@@ -70,14 +61,6 @@ var filmstrip={};
 //            loadloop=0;
 //            load();
         });
-        
-//        idx=Math.floor(arry.length/2);
-//        pos=Math.max(0,idx*160-canvaswidth/2+72);
-//        dispatchOuv(arry[idx]);
-//        
-//        redraw();
-//        loadloop=0;
-//        load();
     };
     this.prev=function(){
         if(idx>0){
