@@ -128,6 +128,12 @@ var filmstrip={};
                     var size=doc.getElementsByTagName("Size").item(0);
                     var width=parseInt(size.getAttribute("Width"));
                     var height=parseInt(size.getAttribute("Height"));
+                    var w=width,h=height,maxlevel=0;
+                    while(w>1 || h>1){
+                        w=(w+1)>>1;
+                        h=(h+1)>>1;
+                        maxlevel++;
+                    }
 //                    console.log(tilesize,width,height,item.id);
                     var level=0;
                     while(width>=tilesize || height>=tilesize){
@@ -141,7 +147,7 @@ var filmstrip={};
                         redraw();
 //                        console.log(""+item.icon);
                     };
-                    img.src=locators.TileLocator(item.id,level,0,0,doc.getAttribute("Format"));
+                    img.src=locators.TileLocator(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
                 };
                 item.icon.send();
             }
