@@ -26,10 +26,11 @@ var filmstrip={};
     var metahack;
     function seriesReady(event){
         metahack=event.target.response;//.slices;
+        let noname=false;
         for(let slice of event.target.response.slices){
             if(!slice.hasOwnProperty("filename")){
-                alert("Series refers sections without corresponding image!");
-                break;
+                noname=true;
+                continue;
             }
             let id=slice.filename;
             let pos=id.lastIndexOf(".");
@@ -52,6 +53,8 @@ var filmstrip={};
                 icon:null
             });
         }
+        if(noname)alert("Series contains sections without corresponding image!");
+
         metaReady(metahack,function(){
             idx=Math.floor(arry.length/2);
             pos=Math.max(0,idx*160-canvaswidth/2+72);
