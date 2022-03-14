@@ -18,11 +18,11 @@ function initvol(location,next){
     xhr.responseType="arraybuffer";
     xhr.onload=function(){
         let data=new Uint8Array(xhr.response);
-        console.log(data.length,Date.now()-start);
+        console.log("Download",data.length,Date.now()-start);
         data=inflate(data);
-        console.log(data.length,Date.now()-start);
+        console.log("Deflate",data.length,Date.now()-start);
         data=derle(data,atlas.encoding);
-        console.log(data.length,Date.now()-start);
+        console.log("Decode",data.length,Date.now()-start);
         voldata=data;
         next();
     };

@@ -32,6 +32,12 @@
         <script src="zoomer.js"></script>
         <script src="math.js"></script>
         <script>
+            var args={atlas:"WHS_SD_Rat_v2_39um"};
+            var pairs=window.location.search.substring(1).split("&");
+            pairs.forEach(function(pair){
+               pair=pair.split("=");
+               args[pair[0]]=pair[1] || true;
+            });
 
             // invocation:
             //     filmstripzoom.html?atlas=<atlas_id>&series=<series_id>
@@ -138,19 +144,47 @@
                 AtlasLocator:function(atlas_id){return atlas_id+".json";},
                 AtlasVolumeLocator:function(atlas_id){return atlas_id+".pack";},
                 
-                DZILocator:function(section_id){
-                    return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
-                            args.pyramids+"/"+
-                            section_id+"/"+
-                            section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
-                },
-                TileLocator:function(section_id,level,x,y,format){
-                    return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
-                            args.pyramids+"/"+
-                            section_id+"/"+
-                            section_id.substring(0,section_id.lastIndexOf("."))+"_files/"+
-                            level+"/"+x+"_"+y+".png";
-                }
+//                DZILocator:function(section_id){
+//                    return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
+//                            args.pyramids+"/"+
+//                            section_id+"/"+
+//                            section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
+//                },
+//                TileLocator:function(section_id,level,x,y,format){
+//                    return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
+//                            args.pyramids+"/"+
+//                            section_id+"/"+
+//                            section_id.substring(0,section_id.lastIndexOf("."))+"_files/"+
+//                            level+"/"+x+"_"+y+".png";
+//                }
+                DZILocator:args.pyramids.startsWith("buckets/")?
+                    function(section_id){
+                        return "https://data-proxy.ebrains.eu/api/v1/public/"+
+                                args.pyramids+"/"+
+                                section_id+"/"+
+                                section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
+                    }:
+                    function(section_id){
+                        return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
+                                args.pyramids+"/"+
+                                section_id+"/"+
+                                section_id.substring(0,section_id.lastIndexOf("."))+".dzi";//(location.search.includes("&xml")?".xml":".dzi");
+                    },
+                TileLocator:args.pyramids.startsWith("buckets/")?
+                    function(section_id,level,x,y,format){
+                        return "https://data-proxy.ebrains.eu/api/v1/public/"+
+                                args.pyramids+"/"+
+                                section_id+"/"+
+                                section_id.substring(0,section_id.lastIndexOf("."))+"_files/"+
+                                level+"/"+x+"_"+y+".png";
+                    }:
+                    function(section_id,level,x,y,format){
+                        return "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/"+
+                                args.pyramids+"/"+
+                                section_id+"/"+
+                                section_id.substring(0,section_id.lastIndexOf("."))+"_files/"+
+                                level+"/"+x+"_"+y+".png";
+                    }
             };
 
             function fullscreen(){
@@ -168,16 +202,16 @@
                 if(zoomer)zoomer.fullcanvas();
             }
             
-            var args={atlas:"WHS_SD_Rat_v2_39um"};
+//            var args={atlas:"WHS_SD_Rat_v2_39um"};
             function startup(){
                 window.addEventListener("resize",fullscreen);
                 fullscreen();
                 
-                var pairs=window.location.search.substring(1).split("&");
-                pairs.forEach(function(pair){
-                   pair=pair.split("=");
-                   args[pair[0]]=pair[1] || true;
-                });
+//                var pairs=window.location.search.substring(1).split("&");
+//                pairs.forEach(function(pair){
+//                   pair=pair.split("=");
+//                   args[pair[0]]=pair[1] || true;
+//                });
                 if(args.view){
                     filmstrip.setalpha(0);
                 }
