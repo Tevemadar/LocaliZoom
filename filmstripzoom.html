@@ -18,8 +18,11 @@
             #alphadesc{float:right;padding-right: 5px;}
 /*            #bright{float:right;height: 15px;width: 100px;}
             #brightdesc{float:right;padding-right: 5px;}*/
-            #tools{background: #F0F0F0;height: 20px;padding: 5px;}
-            #toolsinner{display: none;}
+            #tools{background: #F0F0F0;height: 20px;padding: 5px;position: absolute;left:0;}
+            /*#toolsinner{display: none;}*/
+            #toggleAN,#toggleNL,
+            #antools,
+            #nltools{display: none;}
             #helpbutton{float: right;padding: 5px;}
             #help{display: none;width: 500px;background: #F0F0F0;position: absolute;padding: 10px;}
             #metadata{display: block;position: absolute;text-align: center;}
@@ -219,6 +222,13 @@
                 args.prev=true;
                 if(args.view){
                     document.getElementById("tools").style.display="none";
+                }else{
+                    document.getElementById("tools").style.top=document.getElementById("status").offsetHeight+"px";
+                    if(args.nl){
+                        document.getElementById("toggleNL").style.display="inline";
+                    }else{
+                        document.getElementById("toggleAN").style.display="inline";
+                    }
                 }
                 if(args.opacity){
                     document.getElementById("alpha").value=args.opacity;
@@ -254,7 +264,9 @@
             }
             
             var markers=[];
+            var poi=[];
             var allmarkers={};
+            var allpoi={};
             var ouv={};
             var section_id;
             
@@ -399,6 +411,7 @@
             function dispatchOuv(newouv){
                 if(section_id){
                     allmarkers[section_id]=markers;
+                    allpoi[section_id]=poi;
                 }
                 ouv=newouv;
                 section_id=ouv["id"];
@@ -470,6 +483,11 @@
                     markers=allmarkers[section_id];
                 }else{
                     markers=[];
+                }
+                if(allpoi[section_id]){
+                    poi=allpoi[section_id];
+                }else{
+                    poi=[];
                 }
                 triangulate();
                 
@@ -564,22 +582,38 @@
                         ctx.stroke();
                     }
                     if(!args.view){
-                        ctx.strokeStyle="#FFFF80";
-                        try {ctx.strokeStyle=document.getElementById("crosscolor").value;} catch (ex) {}
-                        ctx.lineWidth=2.5;
-                        ctx.beginPath();
-                        for(var i=0;i<markers.length;i++){
-                            ctx.moveTo(Math.round((markers[i].x-x)*cw/w)+0.5,
-                                       Math.round((markers[i].y-y)*ch/h)+0.5);
-                            var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
-                            var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
-                            ctx.lineTo(sx,sy);
-                            ctx.moveTo(sx,sy-10);
-                            ctx.lineTo(sx,sy+10);
-                            ctx.moveTo(sx-10,sy);
-                            ctx.lineTo(sx+10,sy);
+                        if(args.nl){
+                            ctx.strokeStyle="#FFFF80";
+                            try {ctx.strokeStyle=document.getElementById("nlcolor").value;} catch (ex) {}
+                            ctx.lineWidth=2.5;
+                            ctx.beginPath();
+                            for(var i=0;i<markers.length;i++){
+                                ctx.moveTo(Math.round((markers[i].x-x)*cw/w)+0.5,
+                                           Math.round((markers[i].y-y)*ch/h)+0.5);
+                                var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
+                                var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
+                                ctx.lineTo(sx,sy);
+                                ctx.moveTo(sx,sy-10);
+                                ctx.lineTo(sx,sy+10);
+                                ctx.moveTo(sx-10,sy);
+                                ctx.lineTo(sx+10,sy);
+                            }
+                            ctx.stroke();
+                        }else{
+                            ctx.strokeStyle="#FFFF80";
+                            try {ctx.strokeStyle=document.getElementById("ancolor").value;} catch (ex) {}
+                            ctx.lineWidth=2.5;
+                            ctx.beginPath();
+                            for(var i=0;i<poi.length;i++){
+                                var sx=Math.round((poi[i].x-x)*cw/w)+0.5;
+                                var sy=Math.round((poi[i].y-y)*ch/h)+0.5;
+                                ctx.moveTo(sx,sy-10);
+                                ctx.lineTo(sx,sy+10);
+                                ctx.moveTo(sx-10,sy);
+                                ctx.lineTo(sx+10,sy);
+                            }
+                            ctx.stroke();
                         }
-                        ctx.stroke();
                     }
                     if((pop!==null)&&(alpha!==0)){
                         ctx.fillStyle="rgb("+pop.r+","+pop.g+","+pop.b+")";
@@ -607,9 +641,14 @@
                     var mx=cursor.imagex=Math.round(x+event.offsetX*w/cw);
                     var my=cursor.imagey=Math.round(y+event.offsetY*h/ch);
                     if(markerpick!==undefined){
-                        markers[markerpick].nx=mx;
-                        markers[markerpick].ny=my;
-                        triangulate();
+                        if(args.nl){
+                            markers[markerpick].nx=mx;
+                            markers[markerpick].ny=my;
+                            triangulate();
+                        }else{
+                            poi[markerpick].x=mx;
+                            poi[markerpick].y=my;
+                        }
                         drawImage();
                         return;
                     }
@@ -646,11 +685,20 @@
                 cfg.MouseDown=function(event,cw,ch,x,y,w,h){
                     if(args.view)return false;
                     markerpick=undefined;
-                    for(var i=0;i<markers.length;i++){
-                        var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
-                        var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
-                        if(event.offsetX>sx-10 && event.offsetX<sx+10 && event.offsetY>sy-10 && event.offsetY<sy+10)
-                            markerpick=i;
+                    if(args.nl){
+                        for(var i=0;i<markers.length;i++){
+                            var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
+                            var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
+                            if(event.offsetX>sx-10 && event.offsetX<sx+10 && event.offsetY>sy-10 && event.offsetY<sy+10)
+                                markerpick=i;
+                        }
+                    }else{
+                        for(var i=0;i<poi.length;i++){
+                            var sx=Math.round((poi[i].x-x)*cw/w)+0.5;
+                            var sy=Math.round((poi[i].y-y)*ch/h)+0.5;
+                            if(event.offsetX>sx-10 && event.offsetX<sx+10 && event.offsetY>sy-10 && event.offsetY<sy+10)
+                                markerpick=i;
+                        }
                     }
                     return markerpick!==undefined;
                 };
@@ -681,65 +729,85 @@
                             break;
                         case "Delete":
                             if(!args.view){
-                            var idx=undefined;
-                            for(var i=0;i<markers.length;i++){
-                                var sx=Math.round((markers[i].x-x)*cw/w)+0.5;
-                                var sy=Math.round((markers[i].y-y)*ch/h)+0.5;
-                                if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
-                                    idx=i;
-                                var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
-                                var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
-                                if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
-                                    idx=i;
+                                if(args.nl){
+                                    var idx=undefined;
+                                    for(var i=0;i<markers.length;i++){
+                                        var sx=Math.round((markers[i].x-x)*cw/w)+0.5;
+                                        var sy=Math.round((markers[i].y-y)*ch/h)+0.5;
+                                        if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
+                                            idx=i;
+                                        var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
+                                        var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
+                                        if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
+                                            idx=i;
+                                    }
+                                    if(idx!==undefined){
+                                        markers.splice(idx,1);
+                                        triangulate();
+                                        drawImage();
+                                    }
+                                }else{
+                                    var idx=undefined;
+                                    for(var i=0;i<poi.length;i++){
+                                        var sx=Math.round((poi[i].x-x)*cw/w)+0.5;
+                                        var sy=Math.round((poi[i].y-y)*ch/h)+0.5;
+                                        if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
+                                            idx=i;
+                                    }
+                                    if(idx!==undefined){
+                                        poi.splice(idx,1);
+                                        drawImage();
+                                    }
+                                }
                             }
-                            if(idx!==undefined){
-                                markers.splice(idx,1);
-                                triangulate();
-                                drawImage();
-                            }}
                             break;
                         default:
                             if(!args.view && cursor.imagex>=0 && cursor.imagey>=0 && cursor.imagex<=cfg.Width && cursor.imagey<=cfg.Height){
-                                var D=[cursor.imagex,cursor.imagey];
-                                for(var triangle of triangles){
-                                    var ai=triangle[0];
-                                    var bi=triangle[1];
-                                    var ci=triangle[2];
-                                    var A=vertices[ai];
-                                    var B=vertices[bi];
-                                    var C=vertices[ci];
-                                    var uv1=intri(A,B,C,D);
-                                    if(uv1){
-//                                        console.log(uv1);
-                                        if(ai>=4)
-                                            A=markers[ai-4];
-                                        else
-                                            A={x:vertices[ai][0],y:vertices[ai][1]};
-                                        if(bi>=4)
-                                            B=markers[bi-4];
-                                        else
-                                            B={x:vertices[bi][0],y:vertices[bi][1]};
-                                        if(ci>=4)
-                                            C=markers[triangle[2]-4];
-                                        else
-                                            C={x:vertices[ci][0],y:vertices[ci][1]};
-                                        markers.push({
-                                            x:A.x+(B.x-A.x)*uv1[0]+(C.x-A.x)*uv1[1],
-                                            y:A.y+(B.y-A.y)*uv1[0]+(C.y-A.y)*uv1[1],
-                                            nx:cursor.imagex,
-                                            ny:cursor.imagey
-                                        });
-//                                        console.log(markers[markers.length-1]);
-                                        D=false;
-                                        break;
+                                if(args.nl){
+                                    var D=[cursor.imagex,cursor.imagey];
+                                    for(var triangle of triangles){
+                                        var ai=triangle[0];
+                                        var bi=triangle[1];
+                                        var ci=triangle[2];
+                                        var A=vertices[ai];
+                                        var B=vertices[bi];
+                                        var C=vertices[ci];
+                                        var uv1=intri(A,B,C,D);
+                                        if(uv1){
+    //                                        console.log(uv1);
+                                            if(ai>=4)
+                                                A=markers[ai-4];
+                                            else
+                                                A={x:vertices[ai][0],y:vertices[ai][1]};
+                                            if(bi>=4)
+                                                B=markers[bi-4];
+                                            else
+                                                B={x:vertices[bi][0],y:vertices[bi][1]};
+                                            if(ci>=4)
+                                                C=markers[triangle[2]-4];
+                                            else
+                                                C={x:vertices[ci][0],y:vertices[ci][1]};
+                                            markers.push({
+                                                x:A.x+(B.x-A.x)*uv1[0]+(C.x-A.x)*uv1[1],
+                                                y:A.y+(B.y-A.y)*uv1[0]+(C.y-A.y)*uv1[1],
+                                                nx:cursor.imagex,
+                                                ny:cursor.imagey
+                                            });
+    //                                        console.log(markers[markers.length-1]);
+                                            D=false;
+                                            break;
+                                        }
                                     }
+                                    if(D){
+    //                                    console.log("!");
+                                        markers.push({x:cursor.imagex,y:cursor.imagey,nx:cursor.imagex,ny:cursor.imagey});
+                                    }
+                                    triangulate();
+                                    drawImage();
+                                }else{
+                                    poi.push({x:cursor.imagex,y:cursor.imagey});
+                                    drawImage();
                                 }
-                                if(D){
-//                                    console.log("!");
-                                    markers.push({x:cursor.imagex,y:cursor.imagey,nx:cursor.imagex,ny:cursor.imagey});
-                                }
-                                triangulate();
-                                drawImage();
                             }
                     }
                 };
@@ -766,9 +834,9 @@
                 s+="\n";
                 if(atlas.transformations.length===1){
                     s+="Marker#\tx\ty\t\tnx\tny\tfx\tfy\tfz\n";
-                    for(var i=0;i<markers.length;i++){
+                    for(var i=0;i<poi.length;i++){
                         var line=i+10;
-                        s+=(i+1)+"\t"+markers[i].x+"\t"+markers[i].y+"\t\t"
+                        s+=(i+1)+"\t"+poi[i].x+"\t"+poi[i].y+"\t\t"
                             +"=B"+line+"/$B$2\t=C"+line+"/$C$2\t"
                             +"=B$5+B$6*$E"+line+"+B$7*$F"+line+"\t=C$5+C$6*$E"+line+"+C$7*$F"+line+"\t=D$5+D$6*$E"+line+"+D$7*$F"+line+"\n";
                     }
@@ -802,9 +870,9 @@
                         return String.fromCharCode(A+h-1)+String.fromCharCode(A+l);
                     }
 
-                    for(var i=0;i<markers.length;i++){
+                    for(var i=0;i<poi.length;i++){
                         var line=i+15;
-                        s+=(i+1)+"\t"+markers[i].x+"\t"+markers[i].y+"\t\t"
+                        s+=(i+1)+"\t"+poi[i].x+"\t"+poi[i].y+"\t\t"
                             +"=B"+line+"/$B$2\t=C"+line+"/$C$2\t"
                             +"=B$5+B$6*$E"+line+"+B$7*$F"+line+"\t=C$5+C$6*$E"+line+"+C$7*$F"+line+"\t=D$5+D$6*$E"+line+"+D$7*$F"+line;
                         for(var t=1;t<atlas.transformations.length;t++)
@@ -817,8 +885,34 @@
                 d.close();
             }
             function meshview(){
-                allmarkers[section_id]=markers;
-                var wnd=window.open("about:blank","MeshView #"+Date.now());
+                allpoi[section_id]=poi;
+//                let wnd=window.open("https://meshview.apps.hbp.eu?atlas=AMBA_CCFv3_root","MeshView #"+Date.now());
+                let wnd=window.open("https://meshview.apps.hbp.eu?atlas="+(args.atlas.startsWith("WHS")?"WHS_SD_Rat_v2_39um":"ABA_Mouse_CCFv3_2015_25um"),"MeshView #"+Date.now());
+                let color=document.getElementById("ancolor").value.substring(1);
+                let r=parseInt(color.substring(0,2),16);
+                let g=parseInt(color.substring(2,4),16);
+                let b=parseInt(color.substring(4,6),16);
+                let message=[];
+                for(let section of filmstrip.getmeta()){
+                    let markers=allpoi[section.id] || [];
+                    if(markers.length){
+                        let triplets=[];
+                        for(let marker of markers){
+                            let nx=marker.x/section.w;
+                            let ny=marker.y/section.h;
+                            let x=section.ox+section.ux*nx+section.vx*ny;
+                            let y=section.oy+section.uy*nx+section.vy*ny;
+                            let z=section.oz+section.uz*nx+section.vz*ny;
+                            triplets.push(x,y,z);
+                        }
+                        message.push({name:section.id,r,g,b,triplets});
+                    }
+                }
+                onmessage=()=>{
+                    wnd.postMessage(message,"*");
+                };
+                return;
+                //var wnd=window.open("about:blank","MeshView #"+Date.now());
                 var d=wnd.document;
                 d.write("<html><head><title>MeshView export</title><style>textarea{width:100%;height:80%}</style></head><body>");
                 d.write("Please copy the coordinates below into <a href='http://www.nesys.uio.no/MeshGen/MeshView.html?bitlas="
@@ -830,7 +924,7 @@
                 d.write("RGB 0 0 1\n");
                 d.write("SCALE 5\n");
                 filmstrip.getmeta().forEach(function(section){
-                    var markers=allmarkers[section.id] || [];
+                    var markers=allpoi[section.id] || [];
                     if(markers.length){
                         d.write("\n# "+section.name+"\n");
                         markers.forEach(function(marker){
@@ -963,8 +1057,16 @@ if(!meta){
                 var helpstyle=document.getElementById("help").style;
                 helpstyle.display=helpstyle.display==="block"?"none":"block";
             }
-            function toggleTools(){
-                var toolstyle=document.getElementById("toolsinner").style;
+//            function toggleTools(){
+//                var toolstyle=document.getElementById("toolsinner").style;
+//                toolstyle.display=toolstyle.display==="inline-block"?"none":"inline-block";
+//            }
+            function toggleAN(){
+                var toolstyle=document.getElementById("antools").style;
+                toolstyle.display=toolstyle.display==="inline-block"?"none":"inline-block";
+            }
+            function toggleNL(){
+                var toolstyle=document.getElementById("nltools").style;
                 toolstyle.display=toolstyle.display==="inline-block"?"none":"inline-block";
             }
             function handleOvly(event){
@@ -986,16 +1088,27 @@ if(!meta){
             <div id="alphadesc">Atlas opacity:</div>
             <div id="coords"></div>
         </div>
+        <div id="helpbutton"><button onclick="toggleHelp()">?</button></div>
         <div id="tools">
-            <button id="toggleTools" onclick="toggleTools()">Annotation tools</button>
-            <div id="toolsinner">
+            <button id="toggleAN" onclick="toggleAN()">Annotation tools</button>
+            <button id="toggleNL" onclick="toggleNL()">Settings</button>
+            <div id="antools">
+                Marker color: <input type="color" id="ancolor" value="#000000" oninput="drawImage()" style="height: 18px">
+                <!--<button onclick="load()">Load</button><button onclick="save()" id="btn_save">Save</button>-->
+                Export to <button onclick="excel()">Excel</button> (this slice) or <button onclick="meshview()">MeshView</button> (all slices).
+            </div>
+            <div id="nltools">
+                Marker color: <input type="color" id="nlcolor" value="#000000" oninput="drawImage()" style="height: 18px">
+                <button onclick="load()">Load</button><button onclick="save()" id="btn_save">Save</button>
+                <input type="checkbox" id="show_triangles" onchange="drawImage()">Show triangles
+            </div>
+<!--            <div id="toolsinner">
                 Marker color: <input type="color" id="crosscolor" value="#000000" onchange="drawImage()" style="height: 18px">
                 <button onclick="load()">Load</button><button onclick="save()" id="btn_save">Save</button>
                 Export to <button onclick="excel()">Excel</button> (this slice) or <button onclick="meshview()">MeshView</button> (all slices).
                 <input type="checkbox" id="show_triangles" onchange="drawImage()">Show triangles
-            </div>
+            </div>-->
         </div>
-        <div id="helpbutton"><button onclick="toggleHelp()">?</button></div>
         <canvas id="zoomcanvas" tabindex="1" onmouseover="event.target.focus()"></canvas>
         <canvas id="scroller" onclick="filmstrip.mclick(event)"></canvas>
         <div id="metadata"></div>
