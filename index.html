@@ -8,12 +8,58 @@
                 width:80%;
             }
         </style>
+        <script>
+            async function check(){
+                let jsonurl=document.getElementById("json").value;
+                let pyramids=document.getElementById("pyramids").value;
+                let log=document.getElementById("log");
+                log.innerText="";
+                if(!jsonurl.length)return;
+                let json=await fetch(jsonurl).then(response=>response.json()).catch(exception=>exception);
+                if(json instanceof Error){
+                    log.innerText=`Can't access JSON descriptor at ${jsonurl}. Please verify that the link is correct and that it's available for cross-site access ("CORS").`;
+                    return;
+                }
+                let slices=json.slices;
+                let length=slices.length;
+                if(!pyramids.length){
+                    log.innerText=`${jsonurl} contains ${length} images. Please provide location of pyramids.`;
+                    return;
+                }
+                let pyramidbase=(pyramids.startsWith("bucket/")?
+                    "https://data-proxy.ebrains.eu/api/v1/public/":
+                    "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/")+pyramids;
+                let fail=false;
+                for(let i=0;i<length;i++){
+                    let slice=slices[i];
+                    let old=log.innerText;
+                    log.innerText+=`${i+1}/${length}, ${slice.filename}`;
+                    let name=slice.filename;
+                    name=name.substring(0,name.lastIndexOf("."));
+                    let descriptor=await fetch(`${pyramidbase}/${slice.filename}/${name}.dzi`).then(response=>response.text()).catch(exception=>exception);
+                    if(descriptor instanceof Error){
+                        log.innerText+=" - can't access DZI descriptor\n";
+                        fail=true;
+                    }else
+                        log.innerText=old;
+                }
+                if(fail)
+                    log.innerText+="Check failed."
+                else{
+                    let baselink=`https://localizoom.apps.hbp.eu/filmstripzoom.html?atlas=${atlas.value}&series=${jsonurl}&pyramids=${pyramids}`;
+                    let antools=`${baselink}&tools`;
+                    let nltools=`${antools}&nl`;
+                    log.innerHTML=`Viewer: <a target="_blank" href="${baselink}">${baselink}</a><br>
+        Annotation tools: <a target="_blank" href="${antools}">${antools}</a><br>
+        Nonlinear tools: <a target="_blank" href="${nltools}">${nltools}</a>`;
+                }
+            }
+        </script>
     </head>
     <body>
-<!--        <input type="text" id="json" placeholder="Complete URL" value="https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json"> https://object.cscs.ch/v1/AUTH_6ebec77683fb472f94d352be92b5a577/hbp-00169/482/R604/2001/hbp-00169_482_R604_2001.json<br>
-        <input type="text" id="pyramids" placeholder="Container only" value="imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f"> imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f<br>-->
-        <input type="text" id="json" placeholder="Complete URL for JSON, https://object.cscs.ch/.../xy.json"><br>
-        <input type="text" id="pyramids" placeholder="Container ID only, like imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f"><br>
+        LocaliZoom link configurator<br>
+        <input type="text" id="json" placeholder="Complete URL for JSON, https://object.cscs.ch/.../xy.json" oninput="check()"><br>
+        <input type="text" id="pyramids" placeholder="Container ID only, like &quot;imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f&quot;, or a collab-slug prefixed with &quot;bucket/&quot;" oninput="check()"><br>
         <select id="atlas">
             <option value="WHS_SD_Rat_v4_39um">WHS SD Rat v4 39um</option>
             <option value="WHS_SD_Rat_v3_39um">WHS SD Rat v3 39um</option>
@@ -24,10 +70,8 @@
         </select>
         <button onclick="location.href='filmstripzoom.html?atlas='+atlas.value+'&series='+json.value+'&amp;pyramids='+pyramids.value">Go</button>
         <hr>
-        <a href="#" onclick="atlas.selectedIndex=3;json.value='Test/E15.json';pyramids.value='imgsvc-7e9a11b7-b27f-67d7-95c8-3b72bb5086e9';">E15</a>
-<!--        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C12_anchoring_nonlinear.json&pyramids=imgsvc-18c550ef-2a8e-9492-3638-36d038653f94&xml">C12</a>
-        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C16_anchoring_nonlinear.json&pyramids=imgsvc-ee8c383a-32c4-bb3f-e6dc-cbb544f16fb1&xml">C16</a>
-        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C17_anchoring_nonlinear.json&pyramids=imgsvc-ba14522f-db2a-1304-94b9-a0bf73c81656&xml">C17</a>
-        <a href="filmstripzoom.html?atlas=ABA_Mouse_CCFv3_2017_25um&series=Test/C19_anchoring_nonlinear.json&pyramids=imgsvc-7274cfc1-e882-1b35-e4a7-6514d47d8216&xml">C19</a>-->
+        Test dataset: <a href="#" onclick="atlas.selectedIndex=3;json.value='Test/E15.json';pyramids.value='imgsvc-7e9a11b7-b27f-67d7-95c8-3b72bb5086e9';check()">E15</a>
+        <hr>
+        <div id="log"></div>
     </body>
 </html>
