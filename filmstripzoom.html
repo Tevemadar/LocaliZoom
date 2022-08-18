@@ -476,13 +476,24 @@
                     MaxLevel:0
                 };
                 
-                ouv.w=cfg.Width;
-                ouv.h=cfg.Height;
+//                ouv.w=cfg.Width;
+//                ouv.h=cfg.Height;
                 visualign();
                 if(allmarkers[section_id]){
                     markers=allmarkers[section_id];
                 }else{
                     markers=[];
+                }
+                if(ouv.w!==cfg.Width || ouv.h!==cfg.Height){
+                    for(let marker of markers){
+                        marker.x*=cfg.Width/ouv.w;
+                        marker.y*=cfg.Height/ouv.h;
+                        marker.nx*=cfg.Width/ouv.w;
+                        marker.ny*=cfg.Height/ouv.h;
+                    }
+                    ouv.w=cfg.Width;
+                    ouv.h=cfg.Height;
+//                    alert("!");
                 }
                 if(allpoi[section_id]){
                     poi=allpoi[section_id];
@@ -1017,10 +1028,10 @@ if(!meta){
                         else{
                             allmarkers[meta.id]=meta.vam.map(function(marker){
                                 return {
-                                    x:marker[0]*meta.w/meta.vaw,
-                                    y:marker[1]*meta.h/meta.vah,
-                                    nx:marker[2]*meta.w/meta.vaw,
-                                    ny:marker[3]*meta.h/meta.vah};
+                                    x:marker[0],//*meta.w/meta.vaw,
+                                    y:marker[1],//*meta.h/meta.vah,
+                                    nx:marker[2],//*meta.w/meta.vaw,
+                                    ny:marker[3]/**meta.h/meta.vah*/};
                             });
                             delete meta.vam;
                         }
