@@ -26,8 +26,10 @@ var filmstrip={};
     var metahack;
     function seriesReady(event){
         metahack=event.target.response;//.slices;
+        var slices=metahack.slices;
+        propagation.propagate(slices);
         let noname=false;
-        for(let slice of event.target.response.slices){
+        for(let slice of slices){
             if(!slice.hasOwnProperty("filename")){
                 noname=true;
                 continue;
