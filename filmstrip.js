@@ -35,9 +35,9 @@ var filmstrip={};
                 continue;
             }
             let id=slice.filename;
-            let pos=id.lastIndexOf(".");
-            if(pos>=0)
-                id=id.substring(0,pos)+".tif";
+//            let pos=id.lastIndexOf(".");
+//            if(pos>=0)
+//                id=id.substring(0,pos)+".tif";
             arry.push({
                 id:id,
                 s:slice.nr,
