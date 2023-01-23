@@ -35,9 +35,11 @@ var filmstrip={};
                 continue;
             }
             let id=slice.filename;
-//            let pos=id.lastIndexOf(".");
-//            if(pos>=0)
-//                id=id.substring(0,pos)+".tif";
+            if(args.pyramids!=="buckets/img-eff39c41-6eaa-4d3f-a91f-ef936e793606"){
+                let pos=id.lastIndexOf(".");
+                if(pos>=0)
+                    id=id.substring(0,pos)+".tif";
+            }
             arry.push({
                 id:id,
                 s:slice.nr,
