@@ -35,14 +35,8 @@ var filmstrip={};
                 noname=true;
                 continue;
             }
-            let id=slice.filename;
-            if(args.pyramids!=="buckets/img-eff39c41-6eaa-4d3f-a91f-ef936e793606"){
-                let pos=id.lastIndexOf(".");
-                if(pos>=0)
-                    id=id.substring(0,pos)+".tif";
-            }
             arry.push({
-                id:id,
+                id:slice.filename,
                 s:slice.nr,
                 w:slice.width,
                 h:slice.height,
