@@ -26,6 +26,7 @@ var filmstrip={};
     var metahack;
     function seriesReady(event){
         metahack=event.target.response;//.slices;
+        transformSeries(metahack);
         var slices=metahack.slices;
         propagation.propagate(slices);
         let noname=false;
