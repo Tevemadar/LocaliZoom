@@ -2,108 +2,27 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Setup</title>
-        <style>
-            input{
-                width:80%;
-            }
-        </style>
-        <script>
-            let lock;
-            async function check(){
-                let stamp=Date.now();
-                lock=stamp;
-                let jsonurl=document.getElementById("json").value;
-                let pyramids=document.getElementById("pyramids").value;
-                let log=document.getElementById("log");
-                function setlog(msg){
-                    if(lock===stamp)
-                        log.innerText=msg;
-                }
-                setlog("");
-                if(pyramids.startsWith("img-"))
-                    setlog("Shouldn't it be buckets/"+pyramids+"?\n\n");
-                if(!jsonurl.length)return;
-                let json=await fetch(jsonurl).then(response=>response.status===200?response.json():new Error(response.status+" "+response.statusText)).catch(exception=>exception);
-                if(json instanceof Error){
-                    setlog(`Can't access JSON descriptor at ${jsonurl}. Please verify that the link is correct and that it's available for cross-site access ("CORS").\n${json.message}`);
-                    return;
-                }
-                let slices=json.slices;
-                let length=slices.length;
-                if(!pyramids.length){
-                    setlog(`${jsonurl} contains ${length} images. Please provide location of pyramids.`);
-                    return;
-                }
-                let pyramidbase=(pyramids.startsWith("buckets/")?
-                    "https://data-proxy.ebrains.eu/api/v1/public/":
-                    "https://object.cscs.ch/v1/AUTH_08c08f9f119744cbbf77e216988da3eb/")+pyramids;
-                let fail=false;
-                for(let i=0;i<length;i++){
-                    let slice=slices[i];
-                    let old=log.innerText;
-                    let temp=old+`${i+1}/${length}, ${slice.filename}`;
-                    setlog(temp);
-                    let name=slice.filename;
-                    name=name.substring(0,name.lastIndexOf("."));
-                    let descriptor=await fetch(`${pyramidbase}/${name}.tif/${name}.dzi`).then(response=>response.status===200?response.text():new Error(response.status+" "+response.statusText)).catch(exception=>exception);
-                    if(descriptor instanceof Error){
-                        if(descriptor.message.length)
-                            setlog(temp+" - can't access DZI descriptor "+descriptor.message+"\n");
-                        else
-                            setlog(temp+" - can't access DZI descriptor\n");
-                        fail=true;
-                        if(lock!==stamp)
-                            return;
-                    }else
-                        setlog(old);
-                }
-                if(fail || lock!==stamp)
-                    setlog(log.innerText+"Check failed.");
-                else{
-//                    let baselink=`https://localizoom.apps.hbp.eu/filmstripzoom.html?atlas=${atlas.value}&series=${jsonurl}&pyramids=${pyramids}`;
-                    let baselink=`${location.href.match(/(.*\/)[^/]*/)[1]}filmstripzoom.html?atlas=${atlas.value}&series=${jsonurl}&pyramids=${pyramids}`;
-                    let antools=`${baselink}&tools`;
-                    let nltools=`${antools}&nl`;
-                    log.innerHTML=`Viewer: <a target="_blank" href="${baselink}">${baselink}</a><br>
-        Annotation tools: <a target="_blank" href="${antools}">${antools}</a><br>
-        Nonlinear tools: <a target="_blank" href="${nltools}">${nltools}</a>`;
-                }
-            }
-            function E15(){
-                atlas.selectedIndex=3;
-                json.value="Test/E15.json";
-                pyramids.value="imgsvc-7e9a11b7-b27f-67d7-95c8-3b72bb5086e9";
-                check();                
-            }
-            function bucket(){
-                atlas.selectedIndex=0;
-                json.value="https://data-proxy.ebrains.eu/api/v1/public/buckets/img-46e866da-c645-11ec-aa7f-00090faa0001/H441a_Timm_dark_horizontal.json";
-                pyramids.value="buckets/img-46e866da-c645-11ec-aa7f-00090faa0001";
-                check();                
-            }
-        </script>
+        <title>LocaliZoom launcher page</title>
     </head>
     <body>
-        LocaliZoom link configurator<br><br>
-        <input type="text" id="json" placeholder="Complete URL for JSON, https://object.cscs.ch/.../xy.json" oninput="check()"><br>
-        <input type="text" id="pyramids" placeholder="Container ID only, like &quot;imgsvc-17b7fa98-a152-995b-86d2-fde75106ce0f&quot;, or a collab-slug prefixed with &quot;buckets/&quot;" oninput="check()"><br>
-        <select id="atlas">
-            <option value="WHS_SD_Rat_v4_39um">WHS SD Rat v4 39um</option>
-            <option value="WHS_SD_Rat_v3_39um">WHS SD Rat v3 39um</option>
-            <option value="WHS_SD_Rat_v2_39um">WHS SD Rat v2 39um</option>
-            <option value="ABA_Mouse_CCFv3_2017_25um">AMBA CCFv3 2017 25um</option>
-            <option value="ABA_Mouse_CCFv3_2015_25um">AMBA CCFv3 2015 25um</option>
-            <option value="ABA_Mouse_CCFv2_25um">AMBA CCFv2 25um</option>
-        </select>
-        <!--<button onclick="location.href='filmstripzoom.html?atlas='+atlas.value+'&series='+json.value+'&amp;pyramids='+pyramids.value">Go</button>-->
-        <hr>
-        Demo datasets:
+        LocaliZoom things, under construction<br>
         <ul>
-            <li>CSCS-hosted ("<b>imgsvc-7e9a11b7-b27f-67d7-95c8-3b72bb5086e9</b>") mouse set, "E15" <button onclick="E15()">Pick</button></li>
-            <li>Collab-hosted ("<b>buckets/img-46e866da-c645-11ec-aa7f-00090faa0001</b>") rat set <button onclick="bucket()">Pick</button></li>
+            <li>Demo dataset is hosted on <a href="https://data-proxy.ebrains.eu/localizoom">ebrains</a>.
+            At the moment this "Data Proxy" interface is capable of downloading a single file (double-click, or right-click and "Download Files"), or downloading
+            the entire set. The latter happens via the Actions menu, "Download Bucket" item. Be careful what you wish for,
+            it will download a 4.3 gigabyte .zip file, with 1.6 million files inside. Link showing the numbers: <a href="https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/stat">"stat"</a>.</li>
+            <li></li>
+            <li>Demo dataset is rat, <code>atlas=WHS_SD_Rat_v4_39um</code> for all possible links</li>
         </ul>
-        <hr>
-        <div id="log"></div>
+        
+        GitHub pages, remote data:<ul>
+            <li><a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json&pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom">
+<pre>Viewer link
+https://tevemadar.github.io/LocaliZoom/filmstripzoom.html
+    atlas=WHS_SD_Rat_v4_39um
+    series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json
+    pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom</pre></a></li>
+        </ul>
+        
     </body>
 </html>
