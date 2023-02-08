@@ -898,7 +898,7 @@ if(!meta){
             function load(){
                 var data=prompt("LocaliZoom nonlinear JSON","");
                 if(data===null || data==="")return;
-                loadMarkers(data);
+                loadMarkers(JSON.parse(data));
                 markers=allmarkers[section_id] || [];
                 triangulate();
                 drawImage();
