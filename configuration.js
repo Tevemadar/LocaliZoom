@@ -7,6 +7,26 @@
  * * <code>pyramids</code>=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom
  * @type Object
  */
+
+/**
+ * Do whatever transformation on the series descriptor to make the work of various locators easier.<br>
+ * This demo strips filenames from their extension, this makes DZILocator and
+ * TileLocator very simple to implement
+ * @param {type} series
+ */
+function transformSeries(series) {
+    for (const slice of series.slices) {
+        slice.filename = slice.filename.substring(0, slice.filename.lastIndexOf("."));
+    }
+    /*
+     * Small hack: the demo series consists of dark images, overlay colors are set to light here.
+     * This could be an URL parameter too, maybe it becomes one in the future.
+     */
+    document.getElementById("outline").value="#FFFFFF";
+    document.getElementById("ancolor").value="#00FFFF";
+    document.getElementById("nlcolor").value="#00FFFF";
+}
+
 const locators = {
     /**
      * Provide the link of an actual QuickNII/VisuAlign JSON.
@@ -58,21 +78,3 @@ const locators = {
      */
     AtlasVolumeLocator: atlas_id => atlas_id + ".pack"
 };
-/**
- * Do whatever transformation on the series descriptor to make the work of various locators easier.<br>
- * This demo strips filenames from their extension, this makes DZILocator and
- * TileLocator very simple to implement
- * @param {type} series
- */
-function transformSeries(series) {
-    for (const slice of series.slices) {
-        slice.filename = slice.filename.substring(0, slice.filename.lastIndexOf("."));
-    }
-    /*
-     * Small hack: the demo series consists of dark images, overlay colors are set to light here.
-     * This could be an URL parameter too, maybe it becomes one in the future.
-     */
-    document.getElementById("outline").value="#FFFFFF";
-    document.getElementById("ancolor").value="#00FFFF";
-    document.getElementById("nlcolor").value="#00FFFF";
-}

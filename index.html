@@ -3,26 +3,123 @@
     <head>
         <meta charset="UTF-8">
         <title>LocaliZoom launcher page</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.min.css">
     </head>
     <body>
-        LocaliZoom things, under construction<br>
+        <h1>LocaliZoom</h1>
+        <p>LocaliZoom is a pan-and-zoom type viewer displaying high-resolution image series coupled with overlaid atlas delineations. Both linear (QuickNII) and nonlinear (VisuAlign) registrations are supported. User documentation is provided on <a href="https://localizoom.readthedocs.io/en/latest/">readthedocs.io</a>, source code is on <a href="https://github.com/Tevemadar/LocaliZoom">GitHub</a>.</p>
+        <h2>Three operating modes</h2>
         <ul>
-            <li>Demo dataset is hosted on <a href="https://data-proxy.ebrains.eu/localizoom">ebrains</a>.
-            At the moment this "Data Proxy" interface is capable of downloading a single file (double-click, or right-click and "Download Files"), or downloading
-            the entire set. The latter happens via the Actions menu, "Download Bucket" item. Be careful what you wish for,
-            it will download a 4.3 gigabyte .zip file, with 1.6 million files inside. Link showing the numbers: <a href="https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/stat">"stat"</a>.</li>
-            <li></li>
-            <li>Demo dataset is rat, <code>atlas=WHS_SD_Rat_v4_39um</code> for all possible links</li>
+            <li>Display series with atlas overlay. Both <a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/quicknii.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom">linear</a> and <a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom">nonlinear</a> alignments are supported</li>
+            <li>
+                <a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/quicknii.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom&amp;tools&amp;nl">Create</a> or <a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom&amp;tools&amp;nl">edit</a> nonlinear alginments</li>
+            <li>Create <a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom&amp;tools">markup</a> which can be exported as MeshView point clouds or Excel sheets.</li>
         </ul>
-        
-        GitHub pages, remote data:<ul>
-            <li><a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json&pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom">
-<pre>Viewer link
-https://tevemadar.github.io/LocaliZoom/filmstripzoom.html
-    atlas=WHS_SD_Rat_v4_39um
-    series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/visualign.json
-    pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom</pre></a></li>
+        <h2>The catch</h2>
+        <ul>
+            <li>Linear alignment data has to exist beforehand, LocaliZoom can't create it. Besides QuickNII, there are also DeepSlice and WebAlign which can help with creating a suitable linear registration. Propagation is supported, so when a series looks ready in QuickNII, it will work with LocaliZoom too</li>
+            <li>LocaliZoom works with multi-resolution tiled image pyramids, it uses the <a href="https://en.wikipedia.org/wiki/Deep_Zoom">Deep Zoom</a> format in particular (DZI). Besides being the de-facto standard viewer for this format, <a href="https://openseadragon.github.io/examples/creating-zooming-images/">OpenSeadragon</a> offers a list of utilities which can be used to convert images to this format. The usage of these converters falls outside the scope of this page. EBRAINS image service uses <a href="https://github.com/usnistgov/pyramidio">PyramidIO</a>.</li>
         </ul>
-        
+        <h2>Accessing LocaliZoom</h2>
+        <p>It's important to point out that the most painless way for researchers is to register an <a href="https://ebrains.eu/register">EBRAINS account</a> (free of charge but requires either an email address from a research institution, or a plausible use case), then image conversion is covered too.</p>
+        <p>And the other way is hosting a custom data source and using LocaliZoom with that one. In this case image conversation may be a pain, but no registration is needed.</p>
+        <h2>Configuration</h2>
+        <p>LocaliZoom is configured via its <code>configuration.js</code> file (general settings for the deployment) and some URL parameters (identifying actual data and the atlases). The demo links above are hosted as <a href="https://pages.github.com/">GitHub pages</a>, and use an external data source (those 62 DZI pyramids consist of a bit more than 1.6 million tiles - 256x256 pixel square images, which is quite typical, and occupy more than 4.3 gigabytes, which is actually smaller than normal, but it still isn't a good fit for hosting on GitHub).</p>
+        <h3>Simpler, co-located case</h3>
+        <p>For simplicity the demo dataset has its own co-located LocaliZoom installation too, this approach results in the simplest configuration file and implicitly avoids some possible pitfalls, like <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">Cross-Origin Resource Sharing</a>.</p>
+        <ul>
+            <li>The dataset itself is browseable as <a href="https://data-proxy.ebrains.eu/localizoom">https://data-proxy.ebrains.eu/localizoom</a>
+            </li>
+            <li>It can be downloaded as a whole, which happens via Actions/Download Bucket. The result will be a 4.3+ GB <code>.zip</code> file, with the 1.6+ million files inside. Exact numbers are <a href="https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/stat">here</a>
+            </li>
+            <li>The <a href="https://data-proxy.ebrains.eu/localizoom?prefix=%21LocaliZoom%2F"><code>!LocaliZoom</code></a> folder contains LocaliZoom itself, with a single atlas this time (4th version of the WHS SD Rat atlas). The <code>!</code> is there for ordering purposes only, it comes earlier than numbers in ASCII, so the <code>!</code> things are displayed first in this particular data management interface</li>
+            <li>The <a href="https://data-proxy.ebrains.eu/localizoom?prefix=%21Series%2F"><code>!Series</code></a> folder contains an actual offline QuickNII/VisuAlign series. The two <code>.json</code> files are actually in use by the demo links, the <code>.xml</code> files (outputs of <code>FileBuilder</code> and <code>QuickNII</code>) are provided for completeness only</li>
+            <li>
+                <code>!Series.zip</code> is the downloadable version of the previous folder (the linked data management interface can download a single file at a time)</li>
+            <li>Link of this co-hosted demo: <a href="https://object.cscs.ch/v1/AUTH_7e4157014a3d4c1f8ffe270b57008fd4/localizoom/!LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=../!Series/visualign.json&amp;tools&amp;nl"><code>!LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=../!Series/visualign.json&amp;tools&amp;nl</code></a><br />
+                Breakdown of the URL:
+                <ul>
+                    <li>LocaliZoom starts with <code>filmstripzoom.html</code> (<code>index.html</code> is this very page)</li>
+                    <li>
+                        <code>atlas</code> URL parameter identifies the atlas to use. This LocaliZoom deployment simply has the related <code>.json</code> and <code>.pack</code> files right next to it. While the atlas identifier is already present in series descriptors of QuickNII/VisuAlign, having it as a separate parameter allows checking series with different atlas versions</li>
+                    <li>
+                        <code>series</code> URL parameter links to an actual <code>.json</code> file, it is co-hosted here, and uses a relative location here</li>
+                    <li>
+                        <code>tools</code> URL parameter enables annotation tools by default...</li>
+                    <li>... and nonlinear tools if <code>nl</code> URL parameter is also present.</li>
+                </ul>
+            </li>
+        </ul>
+        <p>Of course LocaliZoom also has to find the image pyramids themselves, which brings us to the <a href="https://object.cscs.ch/v1/AUTH_7e4157014a3d4c1f8ffe270b57008fd4/localizoom/!LocaliZoom/configuration.js"><code>configuration.js</code></a> file. Amongst other tasks, this small file is responsible for locating the actual pyramid files, based on the contents coming from the series descriptor.</p>
+        <p>A QuickNII (or VisuAlign) <a href="https://object.cscs.ch/v1/AUTH_7e4157014a3d4c1f8ffe270b57008fd4/localizoom/!Series/visualign.json">series descriptor</a> refers to actual, local image files, residing next to the descriptor, and usually being in <code>.png</code> or <code>.jpg</code> format:</p>
+        <pre><code>{
+    &quot;name&quot;: &quot;Test series&quot;,
+    [...]
+    &quot;slices&quot;: [
+        {
+            &quot;filename&quot;: &quot;14122_mPPC_BDA_s006.png&quot;, &lt;-- existing file in the !Series folder (and .zip)
+</code></pre>
+        <p>Clicking around in the <a href="https://data-proxy.ebrains.eu/localizoom">example dataset</a> shows what we actually have:</p>
+        <ul>
+            <li>a <a href="https://data-proxy.ebrains.eu/localizoom?prefix=14122_mPPC_BDA_s006.tif%2F"><code>14122_mPPC_BDA_s006.tif</code></a> folder, this folder comes from the converter service of EBRAINS (and it's a <code>.tif</code> because the original file was in that format)</li>
+            <li>with a <code>14122_mPPC_BDA_s006.dzi</code> file inside</li>
+            <li>and a <code>14122_mPPC_BDA_s006_files</code> folder next to it (having a pair of <code>xy.dzi</code> and <code>xy_files</code> comes from the Deep Zoom format).</li>
+        </ul>
+        <p>This is what the <a href="https://object.cscs.ch/v1/AUTH_7e4157014a3d4c1f8ffe270b57008fd4/localizoom/!LocaliZoom/configuration.js">configuration file</a> has to reproduce when asked to. It contains a <code>transformSeries(series)</code> function which allows preprocessing the entire series object (the QuickNII/VisuAlign JSON descriptor) after loading, and a <code>locator</code> object with actual functions for providing the URL of the series descriptor, <code>.dzi</code> files, tiles in the <code>_files</code> folder, and the two atlas files (<code>.json</code> and <code>.pack</code>).</p>
+        <h4><code>transfromSeries()</code> function</h4>
+        <pre><code>function transformSeries(series) {
+</code></pre>
+        <p>The demo function does a convenience transformation: removes the extension from <code>filename</code>, so later the locators can simply append <code>.tif</code>, <code>.dzi</code>, and <code>_files</code> to it:</p>
+        <pre><code>    for (const slice of series.slices) {
+        slice.filename = slice.filename.substring(0, slice.filename.lastIndexOf(&quot;.&quot;));
+    }
+</code></pre>
+        <p>And a dirty hack happens too: knowing that the demo dataset is dark, outline and marker colors are set to something light (white and magenta). This is a quite non-standard step, but it's possible.</p>
+        <pre><code>    document.getElementById(&quot;outline&quot;).value=&quot;#FFFFFF&quot;;
+    document.getElementById(&quot;ancolor&quot;).value=&quot;#00FFFF&quot;;
+    document.getElementById(&quot;nlcolor&quot;).value=&quot;#00FFFF&quot;;
+}
+</code></pre>
+        <h4><code>locators</code> object</h4>
+        <pre><code>const locators = {
+</code></pre>
+        <p><code>SeriesLocator</code> is expected to create an actual URL from a series identifier. Here the <code>series</code> URL parameter was a complete relative path (<code>../!Series/visualign.json</code>), and thus no actual transformation is done:</p>
+        <pre><code>    SeriesLocator: series_id =&gt; series_id,
+</code></pre>
+        <p><code>DZILocator</code> is expected to create an actual URL from a <code>section_id</code>, which is actually the <code>filename</code>, from the series. As <code>filename</code> has been stripped from its <code>.png</code> extension earlier, this step really just appends some extensions to the identifier:</p>
+        <pre><code>    DZILocator: section_id =&gt; `../${section_id}.tif/${section_id}.dzi`,
+</code></pre>
+        <p><code>TileLocator</code> is expected to create an actual URL of a tile. DZI pyramids simply look like this: <code>something.dzi</code> is accompanied by a <code>something_files/</code> folder right next to it, where there are levels inside, also as folders (numbered from <code>0/</code>), and inside those folders there are the actual tiles, like <code>0_0.png</code>. The numbers are coming from the viewer, and the format of the tiles (<code>.png</code> here) comes from the DZI. As <code>filename</code> has been stripped from its <code>.png</code> extension earlier, this step also just merges the parameters together:</p>
+        <pre><code>    TileLocator: (section_id, level, x, y, format) =&gt;
+                     `../${section_id}.tif/${section_id}_files/${level}/${x}_${y}.${format}`,
+</code></pre>
+        <p><code>AtlasLocator</code> is expected to create an actual URL for the atlas descriptor. As <code>WHS_SD_Rat_v4_39um.json</code> resides right next to the viewer, only the <code>.json</code> extension is added here:</p>
+        <pre><code>    AtlasLocator: atlas_id =&gt; atlas_id + &quot;.json&quot;,
+</code></pre>
+        <p><code>AtlasVolumeLocator</code> is expected to create an actual URL for the compressed atlas volume. As <code>WHS_SD_Rat_v4_39um.pack</code> resides right next to the viewer, only the <code>.pack</code> extension is added here:</p>
+        <pre><code>    AtlasVolumeLocator: atlas_id =&gt; atlas_id + &quot;.pack&quot;
+};
+</code></pre>
+        <h3>Example with remote data</h3>
+        <p>A more real-life example is the one on GitHub pages, linked at the top of this page, like <a href="https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/quicknii.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom"><code>https://tevemadar.github.io/LocaliZoom/filmstripzoom.html?atlas=WHS_SD_Rat_v4_39um&amp;series=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/quicknii.json&amp;pyramids=https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom</code></a> (this is the first one of the innocent-looking <code>[demo]</code> links on this page). The key difference is that LocaliZoom is hosted somewhere (<code>https://tevemadar.github.io/LocaliZoom/filmstripzoom.html</code>), and the dataset is hosted somewhere else. Here complete URL-s are used (similarly to the previous case, just there these were relative URL-s). In a real-life installation, specific to a certain website, some parts of the URL would be moved into the configuration file. The <code>series</code> descriptor (<code>https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom/!Series/quicknii.json</code>) and <code>pyramids</code> (new URL argument, <code>https://data-proxy.ebrains.eu/api/v1/public/buckets/localizoom</code>) are separated. This way one image series may have multiple alignments, and it's also possible to refer image series where we could not put our series descriptors simply because of the lack of write access to the given server in general or location in particular. The actual  <a href="https://github.com/Tevemadar/LocaliZoom/blob/master/configuration.js"><code>configuration.js</code></a> is on GitHub this time, and it also contains jsdoc documentation.</p>
+        <h4><code>TileLocator</code></h4>
+        <p>Apart from the documentation part it has two new things: it tells that the URL parameters are actually available in an object called <code>args</code>, and the <code>TileLocator</code> makes use of it:</p>
+        <pre><code>TileLocator: (section_id, level, x, y, format) =&gt;
+    `${args.pyramids}/${section_id}.tif/${section_id}_files`+
+    `/${level}/${x}_${y}.${format}`
+</code></pre>
+        <p>and that's it, what was the relative URL <code>../</code> in the previous example, became <code>${args.pyramids}/</code> now. Technically this configuration could be used for the co-located example too, via providing an extra parameter <code>pyramids=..</code>.</p>
+        <h2>Support</h2>
+        <p><a href="https://ebrains.eu/support/">EBRAINS support</a> in general (no EBRAINS registration is necessary). And there is an <a href="https://github.com/Neural-Systems-at-UIO/LocaliZoom/issues">issue tracker</a> on GitHub for bugs and features.</p>
+        <h2>Acknowledgements</h2>
+        <p>Localizoom is developed by the Neural Systems Laboratory at the Institute of Basic Medical Sciences, University of Oslo, Norway. Localizoom was developed with support from the EBRAINS infrastructure, and funding from the European Union’s Horizon 2020 Framework Programme for Research and Innovation under the Framework Partnership Agreement No. 650003 (HBP FPA).</p>
+        <h3>Dataset</h3>
+        <p>In this example a copy of &quot;subject 14122 mPPC BDA&quot; is used from</p>
+        <p><em>Olsen, G. M., Hovde, K., Sakshaug, T., Sømme H., H., Monterotti, B., Laja, A., Reiten, I., Leergaard, T. B., &amp; Witter, M. P. (2020). Anterogradely labeled axonal projections from the posterior parietal cortex in rat [Data set]. EBRAINS.</em></p>
+        <p><a href="https://doi.org/10.25493/FKM4-ZCC">https://doi.org/10.25493/FKM4-ZCC</a></p>
+        <h3>Theme</h3>
+        <p><a href="https://watercss.kognise.dev/">Water.css</a> (dark)</p>
+        <h2>Citation</h2>
+        <p>[The plan is to get an RRID, and there may be some article coming too.]</p>
     </body>
 </html>
