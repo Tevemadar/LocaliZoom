@@ -5,7 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width">
         <style>
-            body{margin: 0;padding: 0;}
+            body{margin: 0;padding: 0; overflow:hidden;}
             canvas{display: block;cursor: crosshair;outline: none;}
             canvas#scroller{cursor: pointer;}
             div{display: inline-block;}
@@ -26,6 +26,33 @@
             #helpbutton{float: right;padding: 5px;}
             #help{display: none;width: 500px;background: #F0F0F0;position: absolute;padding: 10px;}
             #metadata{display: block;position: absolute;text-align: center;}
+            
+            #cover{
+                background: darkgray;
+                opacity: 0.5;
+                position: absolute;
+                top:0;
+                left:0;
+                width: 100%;
+                height: 100%;
+            }
+            #popup,#popcont{
+                background: white;
+                position: absolute;
+                top:0;
+                bottom:0;
+                left:0;
+                right:0;
+                margin:auto;
+            }
+            #popup{
+                width: 500px;
+                height: 300px;
+            }
+            #popcont{
+                width: max-content;
+                height: max-content;
+            }
         </style>
         <script>
             // implied argument for backward compatibilty
@@ -89,6 +116,7 @@
                     document.getElementById("alpha").value=args.opacity;
                     //document.getElementById("outline").value="#FFFFFF";
                 }
+                popup(`Loading atlas: ${args.atlas.replaceAll("_"," ")}`);
         
                 var xhr=new XMLHttpRequest();
                 xhr.open("GET",locators.AtlasLocator(args.atlas));
@@ -941,6 +969,19 @@ if(!meta){
                 triangulate();
                 drawImage();
             }
+            function popup(pop) {
+                let cover = document.getElementById("cover");
+                let popup = document.getElementById("popup");
+                cover.hidden = popup.hidden = false;
+                cover.style.display = popup.style.display = "block";
+                document.getElementById("popcont").innerHTML = pop;
+            }
+            function cover() {
+                let cover = document.getElementById("cover");
+                let popup = document.getElementById("popup");
+                cover.hidden = popup.hidden = true;
+                cover.style.display = popup.style.display = "none";
+            }
         </script>
     </head>
     <body onload="startup()">
@@ -991,6 +1032,10 @@ if(!meta){
             <a href="https://localizoom.readthedocs.io/" target="_blank">Documentation</a><br>
             <br>
             *: Click on main view to activate keyboard controls.
+        </div>
+        <div id="cover"></div>
+        <div id="popup">
+            <div id="popcont"></div>
         </div>
     </body>
 </html>

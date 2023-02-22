@@ -13,6 +13,7 @@ var filmstrip={};
         initvol(locators.AtlasVolumeLocator(args.atlas),volumeReady);
     };
     function volumeReady(event){
+        cover();
         volumeready=true;
         var xhr=new XMLHttpRequest();
         xhr.open("GET",locators.SeriesLocator(args.series));
