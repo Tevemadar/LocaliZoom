@@ -55,7 +55,9 @@ var filmstrip={};
         if(noname)alert("Series contains sections without corresponding image!");
 
         metaReady(metahack,function(){
-            idx=Math.floor(arry.length/2);
+            idx=arry.findIndex(section=>section.id.includes(args.section));
+            if(idx<0)
+                idx=Math.floor(arry.length/2);
             pos=Math.max(0,idx*160-canvaswidth/2+72);
             dispatchOuv(arry[idx]);
 
