@@ -156,15 +156,30 @@
             var vertices;
             var triangles;
             function triangulate(){
-                vertices=[[0,0],[cfg.Width,0],[0,cfg.Height],[cfg.Width,cfg.Height]];
+//                vertices=[[0,0],[cfg.Width,0],[0,cfg.Height],[cfg.Width,cfg.Height]];
+                vertices=[
+                    [-cfg.Width/10,-cfg.Height/10],
+                    [cfg.Width*1.1,-cfg.Height/10],
+                    [-cfg.Width/10,cfg.Height*1.1],
+                    [cfg.Width*1.1,cfg.Height*1.1]];
                 triangles=[[0,1,2],[1,2,3]];
                 // i<j j*(j-1)/2+i
                 function ix(i,j){return j*(j-1)/2+i;}
 //                var edges=new Array((markers.length+4)*(markers.length+5)/2).fill(0);
                 var edges=[2,2,2,0,2,2];
                 
-                var smallorg=[[0,0],[overlaywidth-1,0],[0,overlayheight-1],[overlaywidth-1,overlayheight-1]];
-                var small=[[0,0],[overlaywidth-1,0],[0,overlayheight-1],[overlaywidth-1,overlayheight-1]];
+//                var smallorg=[[0,0],[overlaywidth-1,0],[0,overlayheight-1],[overlaywidth-1,overlayheight-1]];
+                var smallorg=[ // todo: get rid of it
+                    [-overlaywidth/10,-overlayheight/10],
+                    [(overlaywidth-1)*1.1,-overlayheight/10],
+                    [-overlaywidth/10,(overlayheight-1)*1.1],
+                    [(overlaywidth-1)*1.1,(overlayheight-1)*1.1]];
+//                var small=[[0,0],[overlaywidth-1,0],[0,overlayheight-1],[overlaywidth-1,overlayheight-1]];
+                var small=[
+                    [-overlaywidth/10,-overlayheight/10],
+                    [(overlaywidth-1)*1.1,-overlayheight/10],
+                    [-overlaywidth/10,(overlayheight-1)*1.1],
+                    [(overlaywidth-1)*1.1,(overlayheight-1)*1.1]];
                 
                 for(var marker of markers){
                     var D=[marker.nx,marker.ny];
