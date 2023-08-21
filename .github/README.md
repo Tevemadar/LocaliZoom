@@ -8,7 +8,7 @@ LocaliZoom is a pan-and-zoom type viewer displaying high-resolution image series
 
 ## The catch
 * Linear alignment data has to exist beforehand, LocaliZoom can't create it. Besides QuickNII, there are also DeepSlice and WebAlign which can help with creating a suitable linear registration. Propagation is supported, so when a series looks ready in QuickNII, it will work with LocaliZoom too
-* LocaliZoom works with multi-resolution tiled image pyramids, it uses the [Deep Zoom](https://en.wikipedia.org/wiki/Deep_Zoom) format in particular (DZI). Besides being the de-facto standard viewer for this format, [OpenSeadragon](https://openseadragon.github.io/examples/creating-zooming-images/) offers a list of utilities which can be used to convert images to this format. The usage of these converters falls outside the scope of this page. EBRAINS image service uses [PyramidIO](https://github.com/usnistgov/pyramidio).
+* LocaliZoom works with multi-resolution tiled image pyramids, it uses the [Deep Zoom](https://en.wikipedia.org/wiki/Deep_Zoom) format in particular (DZI). Besides being the de-facto standard viewer for this format, OpenSeadragon has compiled a list of [utilities](https://openseadragon.github.io/examples/creating-zooming-images/) which can be used to convert images to this format. The usage of these converters falls outside the scope of this page.
 
 ## Accessing LocaliZoom
 It's important to point out that the most painless way for researchers is to register an [EBRAINS account](https://ebrains.eu/register) (free of charge but requires either an email address from a research institution, or a plausible use case), then image conversion is covered too.
