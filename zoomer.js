@@ -1,3 +1,5 @@
+var viewnumber=0;
+
 function Zoomer(canvas,cfg){
     var cache=new LRUCache(300);
 
@@ -28,7 +30,7 @@ function Zoomer(canvas,cfg){
         prepare();
     };
     
-    var viewnumber=0;
+//    var viewnumber=0;
     
     this.redraw=prepare;
     function prepare(){
