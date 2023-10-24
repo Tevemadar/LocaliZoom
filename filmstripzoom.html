@@ -87,7 +87,7 @@
                 filmstrip.setwidth(zc.width=sc.width=canvaswidth=window.innerWidth);
                 filmstrip.setheight(sc.height=128+20);
                 zc.height=canvasheight=window.innerHeight-zc.offsetTop-128-20;
-                if(zoomer)zoomer.fullcanvas();
+                if(zoomer)zoomer.home();
             }
             
 //            var args={atlas:"WHS_SD_Rat_v2_39um"};
@@ -439,21 +439,33 @@
                 cfg.Key=function(level,x,y){
                     return locators.TileLocator(section_id,this.MaxLevel-level,x,y,cfg.Format);
                 };
-                cfg.Load=function(key,x,y,next){
-                    var img=document.createElement("img");
-                    var canvas=document.createElement("canvas");
-                    canvas.width=cfg.TileSize;
-                    canvas.height=cfg.TileSize;
-                    img.onload=function(){
-                        canvas.getContext("2d").drawImage(img,x===0?0:-cfg.Overlap,y===0?0:-cfg.Overlap);
-                        next(canvas);
-                    };
-                    img.onerror=function(){
-                        console.log("Invalid tile? "+x+","+y+" "+key);
-                        next(canvas);
-                    };
-                    img.src=key;
+                cfg.Load = async function (key, x, y) {
+                    const img = document.createElement("img");
+                    await new Promise(resolve => {
+                        img.onload = resolve;
+                        img.src = key;
+                    });
+                    const canvas = document.createElement("canvas");
+                    canvas.width = cfg.TileSize;
+                    canvas.height = cfg.TileSize;
+                    canvas.getContext("2d").drawImage(img, x === 0 ? 0 : -cfg.Overlap, y === 0 ? 0 : -cfg.Overlap);
+                    return canvas;
                 };
+//                cfg.Load=function(key,x,y,next){
+//                    var img=document.createElement("img");
+//                    var canvas=document.createElement("canvas");
+//                    canvas.width=cfg.TileSize;
+//                    canvas.height=cfg.TileSize;
+//                    img.onload=function(){
+//                        canvas.getContext("2d").drawImage(img,x===0?0:-cfg.Overlap,y===0?0:-cfg.Overlap);
+//                        next(canvas);
+//                    };
+//                    img.onerror=function(){
+//                        console.log("Invalid tile? "+x+","+y+" "+key);
+//                        next(canvas);
+//                    };
+//                    img.src=key;
+//                };
                 cfg.Overlay=function(ctx,cw,ch,x,y,w,h){
 //                    var bright=parseInt(document.getElementById("bright").value);
 //                    if(bright>1){
@@ -761,9 +773,9 @@
                             }
                     }
                 };
-                if(zoomer)zoomer.detach();
+                if(zoomer)zoomer.destroy();
                 zoomer=new Zoomer(document.getElementById("zoomcanvas"),cfg);
-                zoomer.fullcanvas();
+                zoomer.home();
             }
             function drawImage(){if(zoomer)zoomer.redraw();}
             function excel(){

@@ -1,215 +1,262 @@
-var viewnumber=0;
+class ZoomView {
+    "use strict";
+    #cache = new LRUCache(300);
+    #canvas;
+    #cfg;
+    constructor(canvas, cfg) {
+        this.#canvas = canvas;
+        this.#cfg = cfg;
+    }
 
-function Zoomer(canvas,cfg){
-    var cache=new LRUCache(300);
+    #view;
+    stop() {
+        this.#view = null;
+    }
+    async prepare(view) {
+        this.redraw = drawImage;
+        let {cutx, cuty, cutw, cuth} = view;
+        const curr = this.#view = {cutx, cuty, cutw, cuth};
+        const {Width, Height, TileSize, MaxLevel, /*Key,*/Load, FillStyle} = this.#cfg;
+        const canvaswidth = this.#canvas.width;
+        const canvasheight = this.#canvas.height;
 
-    var canvaswidth=0;
-    var canvasheight=0;
-    var view=null; // cutx-cuty-cutw-cuth visible portion of image (in image pixels)
-
-    this.fullcanvas=function(){
-        canvaswidth=canvas.width;
-        canvasheight=canvas.height;
-        var w=cfg.Width;
-        var h=cfg.Height;
-        if(w/h<canvaswidth/canvasheight){
-            view={
-                cutx:(w-h*canvaswidth/canvasheight)/2,
-                cuty:0,
-                cutw:h*canvaswidth/canvasheight,
-                cuth:h
-            };
-        }else{
-            view={
-                cutx:0,
-                cuty:(h-w*canvasheight/canvaswidth)/2,
-                cutw:w,
-                cuth:w*canvasheight/canvaswidth
-            };
-        }
-        prepare();
-    };
-    
-//    var viewnumber=0;
-    
-    this.redraw=prepare;
-    function prepare(){
-        var cutx=view.cutx;
-        var cuty=view.cuty;
-        var cutw=view.cutw;
-        var cuth=view.cuth;
-
-        var loadingnumber=++viewnumber;
-
-        var planewidth=cfg.Width;
-        var planeheight=cfg.Height;
-        var tilesize=cfg.TileSize;
-        var maxlevel=cfg.MaxLevel;
-        var level=0;
-        while((cutw>=canvaswidth*2)&&(cuth>=canvasheight*2)&&(level<maxlevel)){
-            planewidth=(planewidth+1)>>1;
-            planeheight=(planeheight+1)>>1;
-            cutw=(cutw+1)>>1;
-            cuth=(cuth+1)>>1;
-            cutx=(cutx+1)>>1;
-            cuty=(cuty+1)>>1;
+        var planewidth = Width;
+        var planeheight = Height;
+        var level = 0;
+        while ((cutw >= canvaswidth * 2) && (cuth >= canvasheight * 2) && (level < MaxLevel)) {
+            planewidth = (planewidth + 1) >> 1;
+            planeheight = (planeheight + 1) >> 1;
+            cutw = (cutw + 1) >> 1;
+            cuth = (cuth + 1) >> 1;
+            cutx = (cutx + 1) >> 1;
+            cuty = (cuty + 1) >> 1;
             level++;
         }
-        var tx=Math.floor(cutx/tilesize);
-        var ty=Math.floor(cuty/tilesize);
-        var tw=Math.floor((cutx+cutw)/tilesize-tx+1);
-        var th=Math.floor((cuty+cuth)/tilesize-ty+1);
+        var tx = Math.floor(cutx / TileSize);
+        var ty = Math.floor(cuty / TileSize);
+        var tw = Math.floor((cutx + cutw) / TileSize - tx + 1);
+        var th = Math.floor((cuty + cuth) / TileSize - ty + 1);
 
-        var image=document.createElement("canvas");
-        image.width=tw*tilesize;
-        image.height=th*tilesize;
-        var ctx=image.getContext("2d");
+        var image = document.createElement("canvas");
+        image.width = tw * TileSize;
+        image.height = th * TileSize;
+        var ctx = image.getContext("2d");
 
-        var mainctx=canvas.getContext("2d");
-        var tempx=cutx;
-        while(tempx<0)tempx+=tilesize;
-        var tempy=cuty;
-        while(tempy<0)tempy+=tilesize;
-        function drawImage(){
-            mainctx.globalAlpha=1;
-            mainctx.fillStyle=cfg.FillStyle || "#FFFFFF";
-            mainctx.fillRect(0,0,canvaswidth,canvasheight);
-            mainctx.drawImage(image,tempx % tilesize,tempy % tilesize,cutw,cuth,0,0,canvaswidth,canvasheight);
-            if(cfg.Overlay)
-                try{cfg.Overlay(mainctx,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth);}
-                catch(ex){console.log("Overlay exception: "+ex);}
-        };
+        const cliprect = new Path2D();
+        cliprect.rect(-cutx * canvaswidth / cutw, -cuty * canvasheight / cuth, planewidth * canvaswidth / cutw, planeheight * canvasheight / cuth);
 
-        function drawTile(tile,x,y){
-            ctx.drawImage(tile,x*tilesize,y*tilesize);
+        cutx = (cutx % TileSize + TileSize) % TileSize;
+        cuty = (cuty % TileSize + TileSize) % TileSize;
+
+        const mainctx = this.#canvas.getContext("2d");
+        const dizcfg = this.#cfg;
+        const dizcache = this.#cache;
+        function drawImage() {
+            for (let y = 0; y < th; y++)
+                for (let x = 0; x < tw; x++) {
+                    const ox = tx + x;
+                    const oy = ty + y;
+                    let ex = ox;
+                    let ey = oy;
+                    if (ex >= 0 && ey >= 0 && ex * TileSize < planewidth && ey * TileSize < planeheight) {
+                        let clip = TileSize;
+                        let mask = 0;
+                        let lvl = level;
+                        let key = dizcfg.Key(lvl, ex, ey);
+                        let tile = dizcache.get(key);
+                        while (!tile && lvl < MaxLevel) {
+                            clip /= 2;
+                            mask = (mask << 1) + 1;
+                            ex >>= 1;
+                            ey >>= 1;
+                            lvl++;
+                            key = dizcfg.Key(lvl, ex, ey);
+                            tile = dizcache.get(key);
+                        }
+                        if (tile)
+                            ctx.drawImage(tile, (ox & mask) * clip, (oy & mask) * clip, clip, clip, x * TileSize, y * TileSize, TileSize, TileSize);
+                    }
+                }
+            mainctx.reset();
+            mainctx.globalAlpha = 1;
+            mainctx.fillStyle = FillStyle || "#FFFFFF";
+            mainctx.fillRect(0, 0, canvaswidth, canvasheight);
+            mainctx.save();
+            mainctx.clip(cliprect);
+            mainctx.drawImage(image, cutx, cuty, cutw, cuth, 0, 0, canvaswidth, canvasheight);
+            mainctx.restore();
+//            mainctx.strokeStyle = "red";
+//            mainctx.stroke(cliprect);
+            if (dizcfg.Overlay)
+                dizcfg.Overlay(mainctx, canvaswidth, canvasheight, view.cutx, view.cuty, view.cutw, view.cuth);
         }
 
-        var loading=[];
+        const loadmap = new Map;
 
-        for(var y=th-1;y>=0;y--)
-            for(var x=tw-1;x>=0;x--){
-                var ex=tx+x;
-                var ey=ty+y;
-                if(ex>=0 && ey>=0 && ex*tilesize<planewidth && ey*tilesize<planeheight){
-                    var key=cfg.Key(level,ex,ey);
-                    var tile=cache.get(key);
-                    if(!tile){
-                        loading.push({x:x,y:y,ex:ex,ey:ey,key:key});
-                        (function(ex,ey,level){
-                            var ox=ex,oy=ey;
-                            var size=tilesize;
-                            var mask=0;
-                            while(!tile && level<maxlevel){
-                                size >>= 1;
-                                mask=(mask<<1)+1;
-                                ex >>= 1;
-                                ey >>= 1;
-                                level++;
-                                key=cfg.Key(level,ex,ey);
-                                tile=cache.get(key);
-                            }
-                            if(tile)
-                                ctx.drawImage(tile,(ox&mask)*size,(oy&mask)*size,size,size,x*tilesize,y*tilesize,tilesize,tilesize);
-                        })(ex,ey,level);
+        for (let x = 0; x < tw; x++)
+            for (let y = 0; y < th; y++) {
+                let ex = tx + x;
+                let ey = ty + y;
+                if (ex >= 0 && ey >= 0 && ex * TileSize < planewidth && ey * TileSize < planeheight) {
+                    let templevel = level;
+                    let key = this.#cfg.Key(level, ex, ey);
+                    while (!this.#cache.get(key) && templevel < MaxLevel) {
+                        loadmap.set(key, {ex, ey, key, level: templevel});
+                        ex >>= 1;
+                        ey >>= 1;
+                        templevel++;
+                        key = this.#cfg.Key(templevel, ex, ey);
                     }
-                    else
-                        drawTile(tile,x,y);
                 }
             }
         drawImage();
+        const loading = Array.from(loadmap.values());
+        loading.sort((x, y) => x.level - y.level);
 
-        (function loadloop(){
-            if(loading.length===0)return;
-            var loaditem=loading.pop();
-            cfg.Load(loaditem.key,loaditem.ex,loaditem.ey,function(tile){
-                cache.put(loaditem.key,tile);
-                if(viewnumber===loadingnumber){
-                    drawTile(tile,loaditem.x,loaditem.y);
-                    drawImage();
-                    loadloop();
-                }
-            });
-        })();
+        let queued = new Set();
+        while ((loading.length || queued.size) && this.#view === curr) {
+            while (loading.length && queued.size < 10) {
+                const promise = new Promise(async resolve => {
+                    const {ex, ey, key} = loading.pop();
+                    const tile = await Load(key, ex, ey);
+                    this.#cache.put(key, tile);
+                    if (this.#view === curr) {
+                        drawImage();
+                    }
+                    queued.delete(promise);
+                    resolve();
+                });
+                queued.add(promise);
+            }
+            await Promise.race(queued);
+        }
+
+//        while(loading.length && this.#view === curr) {
+//            const {ex,ey,key} = loading.pop();
+//            const tile = await Load(key, ex, ey);
+//            this.#cache.put(key, tile);
+//            if (this.#view === curr) {
+//                drawImage();
+//            }
+//        }
+    }
+}
+
+class Zoomer {
+    #canvas;
+    #cfg;
+    #zoomer;
+    #handlers = {};
+    constructor(canvas, cfg) {
+        this.#canvas = canvas;
+        this.#cfg = cfg;
+        this.#zoomer = new ZoomView(canvas, cfg);
+        const h = this.#handlers;
+        canvas.addEventListener("mousedown", h.mdown = e => this.#mdown(e), true);
+        canvas.addEventListener("mouseup", h.mup = e => this.#mup(e), true);
+        canvas.addEventListener("mousemove", h.mmove = e => this.#mmove(e), true);
+        canvas.addEventListener("wheel", h.mwheel = e => this.#mwheel(e), true);
+        canvas.addEventListener("keydown", h.kdown = e => this.#kdown(e), true);
+        canvas.addEventListener("keypress", h.kpress = e => this.#kpress(e), true);
+        canvas.addEventListener("keyup", h.kup = e => this.#kup(e), true);
     }
 
-    var pick=false;
-    var pickx;
-    var picky;
-    this.mdown=function(event){
-        if(cfg.MouseDown)
-            try{
-                if(cfg.MouseDown(event,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth))
-                    return;
-            }catch(ex){console.log("MouseDown exception: "+ex);}
-        pick=true;
-        pickx=event.offsetX;
-        picky=event.offsetY;
-    };
-    this.mup=function(event){
-        pick=false;
-        if(cfg.MouseUp)
-            try{cfg.MouseUp(event,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth);}
-            catch(ex){console.log("MouseUp exception: "+ex);}
-    };
-    this.mmove=function(event){
-        if(pick) {
-            view.cutx+=(pickx-event.offsetX)*view.cutw/canvaswidth;
-            view.cuty+=(picky-event.offsetY)*view.cuth/canvasheight;
-            pickx=event.offsetX;
-            picky=event.offsetY;
-            prepare();
-        }
-        if(cfg.MouseMove)
-            try{cfg.MouseMove(event,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth);}
-            catch(ex){console.log("MouseMove exception: "+ex);}
-    };
-    this.mwheel=function(event){
-        event.preventDefault();
-        if(event.deltaY<0){
-            view.cutx+=(event.offsetX*view.cutw/canvaswidth)*0.1;
-            view.cuty+=(event.offsetY*view.cuth/canvasheight)*0.1;
+    destroy() {
+        this.#zoomer.stop();
+        const c = this.#canvas;
+        const h = this.#handlers;
+        c.removeEventListener("mousedown", h.mdown, true);
+        c.removeEventListener("mouseup", h.mup, true);
+        c.removeEventListener("mousemove", h.mmove, true);
+        c.removeEventListener("wheel", h.mwheel, true);
+        c.removeEventListener("keydown", h.kdown, true);
+        c.removeEventListener("keypress", h.kpress, true);
+        c.removeEventListener("keyup", h.kup, true);
+    }
 
-            view.cutw*=0.9;
-            view.cuth=view.cutw*canvasheight/canvaswidth;
-        }else{
-            view.cutw/=0.9;
-            view.cuth=view.cutw*canvasheight/canvaswidth;
-            view.cutx-=(event.offsetX*view.cutw/canvaswidth)*0.1;
-            view.cuty-=(event.offsetY*view.cuth/canvasheight)*0.1;
+    redraw() {
+        if (this.#zoomer.redraw)
+            this.#zoomer.redraw();
+    }
+
+    #view;
+    home() {
+        const cw = this.#canvas.width;
+        const ch = this.#canvas.height;
+        const w = this.#cfg.Width;
+        const h = this.#cfg.Height;
+        if (w / h < cw / ch) {
+            this.#view = {
+                cutx: (w - h * cw / ch) / 2,
+                cuty: 0,
+                cutw: h * cw / ch,
+                cuth: h
+            };
+        } else {
+            this.#view = {
+                cutx: 0,
+                cuty: (h - w * ch / cw) / 2,
+                cutw: w,
+                cuth: w * ch / cw
+            };
         }
-        prepare();
-    };
-    this.kdown=function(event){
-        if(cfg.KeyDown)
-            try{cfg.KeyDown(event,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth);}
-            catch(ex){console.log("KeyDown exception: "+ex);}
-    };
-    this.kpress=function(event){
-        if(cfg.KeyPress)
-            try{cfg.KeyPress(event,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth);}
-            catch(ex){console.log("KeyPress exception: "+ex);}
-    };
-    this.kup=function(event){
-        if(cfg.KeyUp)
-            try{cfg.KeyUp(event,canvaswidth,canvasheight,view.cutx,view.cuty,view.cutw,view.cuth);}
-            catch(ex){console.log("KeyUp exception: "+ex);}
-    };
-    
-    this.detach=function(){
-        canvas.removeEventListener("mousedown",this.mdown,true);
-        canvas.removeEventListener("mouseup",this.mup,true);
-        canvas.removeEventListener("mousemove",this.mmove,true);
-        canvas.removeEventListener("wheel",this.mwheel,true);
-        canvas.removeEventListener("keydown",this.kdown,true);
-        canvas.removeEventListener("keypress",this.kpress,true);
-        canvas.removeEventListener("keyup",this.kup,true);
-    };
-    
-    canvas.addEventListener("mousedown",this.mdown,true);
-    canvas.addEventListener("mouseup",this.mup,true);
-    canvas.addEventListener("mousemove",this.mmove,true);
-    canvas.addEventListener("wheel",this.mwheel,true);
-    canvas.addEventListener("keydown",this.kdown,true);
-    canvas.addEventListener("keypress",this.kpress,true);
-    canvas.addEventListener("keyup",this.kup,true);
+        this.#zoomer.prepare(this.#view);
+    }
+    #pick = false;
+    #pickx;
+    #picky;
+    #mdown(event) {
+        if (this.#cfg.MouseDown)
+            if (this.#cfg.MouseDown(event, this.#canvas.width, this.#canvas.height, this.#view.cutx, this.#view.cuty, this.#view.cutw, this.#view.cuth))
+                return;
+        this.#pick = true;
+        this.#pickx = event.offsetX;
+        this.#picky = event.offsetY;
+    }
+    #mup(event) {
+        if (this.#cfg.MouseUp)
+            this.#cfg.MouseUp(event, this.#canvas.width, this.#canvas.height, this.#view.cutx, this.#view.cuty, this.#view.cutw, this.#view.cuth);
+        this.#pick = false;
+    }
+
+    #mmove(event) {
+        if (this.#cfg.MouseMove)
+            this.#cfg.MouseMove(event, this.#canvas.width, this.#canvas.height, this.#view.cutx, this.#view.cuty, this.#view.cutw, this.#view.cuth);
+        if (this.#pick) {
+            this.#view.cutx += (this.#pickx - event.offsetX) * this.#view.cutw / this.#canvas.width;
+            this.#view.cuty += (this.#picky - event.offsetY) * this.#view.cuth / this.#canvas.height;
+            this.#pickx = event.offsetX;
+            this.#picky = event.offsetY;
+            this.#zoomer.prepare(this.#view);
+        }
+    }
+    #mwheel(event) {
+        event.preventDefault();
+        const cw = this.#canvas.width;
+        const ch = this.#canvas.height;
+        if (event.deltaY < 0) {
+            this.#view.cutx += (event.offsetX * this.#view.cutw / cw) * 0.1;
+            this.#view.cuty += (event.offsetY * this.#view.cuth / ch) * 0.1;
+            this.#view.cutw *= 0.9;
+            this.#view.cuth = this.#view.cutw * ch / cw;
+        } else {
+            this.#view.cutw /= 0.9;
+            this.#view.cuth = this.#view.cutw * ch / cw;
+            this.#view.cutx -= (event.offsetX * this.#view.cutw / cw) * 0.1;
+            this.#view.cuty -= (event.offsetY * this.#view.cuth / ch) * 0.1;
+        }
+        this.#zoomer.prepare(this.#view);
+    }
+    #kdown(event) {
+        if (this.#cfg.KeyDown)
+            this.#cfg.KeyDown(event, this.#canvas.width, this.#canvas.height, this.#view.cutx, this.#view.cuty, this.#view.cutw, this.#view.cuth);
+    }
+    #kpress(event) {
+        if (this.#cfg.KeyPress)
+            this.#cfg.KeyPress(event, this.#canvas.width, this.#canvas.height, this.#view.cutx, this.#view.cuty, this.#view.cutw, this.#view.cuth);
+    }
+    #kup(event) {
+        if (this.#cfg.KeyUp)
+            this.#cfg.KeyUp(event, this.#canvas.width, this.#canvas.height, this.#view.cutx, this.#view.cuty, this.#view.cutw, this.#view.cuth);
+    }
 }
