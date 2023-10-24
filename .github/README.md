@@ -110,7 +110,8 @@ In this example a copy of "subject 14122 mPPC BDA" is used from
 https://doi.org/10.25493/FKM4-ZCC
 
 ### Theme
-[Water.css](https://watercss.kognise.dev/) (dark)
+Of the [pretty page](https://object.cscs.ch/v1/AUTH_7e4157014a3d4c1f8ffe270b57008fd4/localizoom/!LocaliZoom/index.html): [Water.css](https://watercss.kognise.dev/) (dark)
 
 ## Citation
-[The plan is to get an RRID, and there may be some article coming too.]
+RRID on [SciCrunch](https://scicrunch.org/resolver/RRID:SCR_023481): (LocaliZoom, RRID:SCR_023481)  
+[In the future there may be some article coming too.]
