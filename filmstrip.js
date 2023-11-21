@@ -56,6 +56,20 @@ var filmstrip={};
         if(noname)alert("Series contains sections without corresponding image!");
 
         metaReady(metahack,function(){
+            const scale=atlas.scale;
+            if(scale){
+                for(let section of arry){
+                    section.ox*=scale;
+                    section.oy*=scale;
+                    section.oz*=scale;
+                    section.ux*=scale;
+                    section.uy*=scale;
+                    section.uz*=scale;
+                    section.vx*=scale;
+                    section.vy*=scale;
+                    section.vz*=scale;
+                }
+            }
             idx=arry.findIndex(section=>section.id.includes(args.section));
             if(idx<0)
                 idx=Math.floor(arry.length/2);
