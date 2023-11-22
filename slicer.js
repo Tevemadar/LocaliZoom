@@ -46,8 +46,10 @@ function dataslice(ouv){
             var lx=Math.round(hx+ouv.ux*x/width);
             var ly=Math.round(hy+ouv.uy*x/width);
             var lz=Math.round(hz+ouv.uz*x/width);
-            if( (lx>=0) && (lx<xdim) && (ly>=0) && (ly<ydim) && (lz>=0) && (lz<zdim) )
-                data[i]=voldata[lx+ly*xdim+lz*zslice];
+            if( (lx>=0) && (lx<xdim) && (ly>=0) && (ly<ydim) && (lz>=0) && (lz<zdim) ) {
+                const idx=lx+ly*xdim+lz*zslice;
+                data[i]=voldata[idx>>blobshift][idx&blobmask];
+            }
         }
     }
     return {data:data,width:width,height:height};

@@ -1,8 +1,14 @@
-function derle(data, method, sizehint) {
+const blobshift = 29;
+const blobmax = 1 << 29;
+const blobmask = blobmax - 1;
+function derle(data, method, size) {
     let word = method > 1;
-    if(!sizehint)
-        sizehint = data.length;
-    let result = word ? new Uint16Array(sizehint) : new Uint8Array(sizehint);
+    let result = [];
+    while (size) {
+        const step = Math.min(size, blobmax);
+        result.push(word ? new Uint16Array(step) : new Uint8Array(step));
+        size -= step;
+    }
     let dread, cread;
     switch (method) {
         case 1:
@@ -19,6 +25,8 @@ function derle(data, method, sizehint) {
         default:
             throw "Ehm, please implement " + method;
     }
+    const it = result.values();
+    let blob = it.next().value;
     let writepos = 0;
     let readpos = 0;
     while (readpos < data.length) {
@@ -29,12 +37,17 @@ function derle(data, method, sizehint) {
 //            write(d);
         let d = dread(),
             c = cread() + 1;
-        if (writepos + c > result.length)
-            resize(result.length * 2);
-        result.fill(d, writepos, writepos + c);
-        writepos += c;
+        if (writepos + c <= blob.length) {
+            blob.fill(d, writepos, writepos + c);
+            writepos += c;
+        } else {
+            blob.fill(d, writepos, blob.length);
+            writepos = writepos + c - blob.length;
+            blob = it.next().value;
+            blob.fill(d, 0, writepos);
+        }
     }
-    resize(writepos);
+//    resize(writepos);
     return result;
 
     function read8() {
@@ -54,13 +67,13 @@ function derle(data, method, sizehint) {
 //            resize(result.length * 2);
 //        result[writepos++] = d;
 //    }
-    function resize(len) {
-        if (result.length === len)
-            return;
-        let realloc = word ? new Uint16Array(len) : new Uint8Array(len);
-        len = Math.min(len, result.length);
-        for (let i = 0; i < len; i++)
-            realloc[i] = result[i];
-        result = realloc;
-    }
+//    function resize(len) {
+//        if (result.length === len)
+//            return;
+//        let realloc = word ? new Uint16Array(len) : new Uint8Array(len);
+//        len = Math.min(len, result.length);
+//        for (let i = 0; i < len; i++)
+//            realloc[i] = result[i];
+//        result = realloc;
+//    }
 }
