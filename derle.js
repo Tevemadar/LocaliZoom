@@ -1,6 +1,8 @@
-function derle(data, method) {
+function derle(data, method, sizehint) {
     let word = method > 1;
-    let result = word ? new Uint16Array(data.length) : new Uint8Array(data.length);
+    if(!sizehint)
+        sizehint = data.length;
+    let result = word ? new Uint16Array(sizehint) : new Uint8Array(sizehint);
     let dread, cread;
     switch (method) {
         case 1:
@@ -27,7 +29,7 @@ function derle(data, method) {
 //            write(d);
         let d = dread(),
             c = cread() + 1;
-        if (writepos + c >= result.length)
+        if (writepos + c > result.length)
             resize(result.length * 2);
         result.fill(d, writepos, writepos + c);
         writepos += c;

@@ -21,7 +21,7 @@ function initvol(location,next){
         console.log("Download",data.length,Date.now()-start);
         data=inflate(data);
         console.log("Deflate",data.length,Date.now()-start);
-        data=derle(data,atlas.encoding);
+        data=derle(data,atlas.encoding,atlas.xdim*atlas.ydim*atlas.zdim);
         console.log("Decode",data.length,Date.now()-start);
         voldata=data;
         next();
