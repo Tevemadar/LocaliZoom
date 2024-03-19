@@ -9,25 +9,30 @@ var filmstrip={};
     this.setheight=function(height){canvasheight=height;redraw();return height;};
 
     var volumeready=false;
-    this.start=function(){
-        initvol(locators.AtlasVolumeLocator(args.atlas),volumeReady);
+    this.start=async function(){
+        initvol(await locators.AtlasVolumeLocator(args.atlas),volumeReady);
     };
-    function volumeReady(event){
-        cover();
-        volumeready=true;
-        var xhr=new XMLHttpRequest();
-        xhr.open("GET",locators.SeriesLocator(args.series));
-        xhr.responseType="json";
-        xhr.onload=seriesReady;
-        xhr.send();
-    }
+//    async function volumeReady(event){
+//        cover();
+//        volumeready=true;
+//        var xhr=new XMLHttpRequest();
+//        xhr.open("GET",locators.SeriesLocator(args.series));
+//        xhr.responseType="json";
+//        xhr.onload=seriesReady;
+//        xhr.send();
+//        
+//    }
     
     var arry=[];
     this.getmeta=function(){return arry;};
     var metahack;
-    function seriesReady(event){
-        metahack=event.target.response;//.slices;
-        transformSeries(metahack);
+//    async function seriesReady(event){
+    async function volumeReady(event){
+        cover();
+        volumeready=true;
+        //metahack=event.target.response;//.slices;
+        metahack=await locators.SeriesLocator(args.series);
+        await transformSeries(metahack);
         var slices=metahack.slices;
         propagation.propagate(slices);
         let noname=false;
@@ -125,10 +130,12 @@ var filmstrip={};
                 ctx.fillRect(x*160-pos+20-10,20,128+10+10,128);
             }
             if(item.icon===null){
-                item.icon=new XMLHttpRequest();
-                item.icon.open("GET",locators.DZILocator(item.id));
-                item.icon.onload=function(event){
-                    var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
+                item.icon=locators.DZILocator(item.id).then(dzi=>{
+//                item.icon=new XMLHttpRequest();
+//                item.icon.open("GET",locators.DZILocator(item.id));
+//                item.icon.onload=function(event){
+//                    var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
+                    var doc=new DOMParser().parseFromString(dzi,"text/xml").documentElement;
                     var tilesize=parseInt(doc.getAttribute("TileSize"));
                     var size=doc.getElementsByTagName("Size").item(0);
                     var width=parseInt(size.getAttribute("Width"));
@@ -153,8 +160,8 @@ var filmstrip={};
 //                        console.log(""+item.icon);
                     };
                     img.src=locators.TileLocator(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
-                };
-                item.icon.send();
+                });
+//                item.icon.send();
             }
             if(item.icon instanceof HTMLImageElement){
                 if(item.icon.width>=item.icon.height){

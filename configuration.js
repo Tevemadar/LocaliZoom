@@ -14,7 +14,7 @@
  * TileLocator very simple to implement
  * @param {type} series
  */
-function transformSeries(series) {
+async function transformSeries(series) {
     for (const slice of series.slices) {
         slice.filename = slice.filename.substring(0, slice.filename.lastIndexOf("."));
     }
@@ -35,7 +35,7 @@ const locators = {
      * @param {string} series_id <code>series</code> URL parameter
      * @returns {string} 
      */
-    SeriesLocator: series_id => series_id,
+    SeriesLocator: async series_id => fetch(series_id).then(response => response.json()),
     /**
      * Provide the link of an actual DZI descriptor.
      * <br>
@@ -45,8 +45,7 @@ const locators = {
      * @param {string} section_id <code>filename</code> field of a section
      * @returns {string}
      */
-    DZILocator: section_id =>
-        `${args.pyramids}/${section_id}.tif/${section_id}.dzi`,
+    DZILocator: async section_id => fetch(`${args.pyramids}/${section_id}.tif/${section_id}.dzi`).then(response => response.text()),
     /**
      * Provide the link of an actual image tile.
      * <br>
@@ -69,12 +68,12 @@ const locators = {
      * @param {type} atlas_id <code>atlas</code> URL parameter
      * @returns {string}
      */
-    AtlasLocator: atlas_id => atlas_id + ".json",
+    AtlasLocator: async atlas_id => fetch(atlas_id + ".json").then(response => response.json()),
     /**
      * Provide the link of the atlas descriptor, atlas data is often just next to LocaliZoom,
      * and appending a .pack extension is enough
      * @param {type} atlas_id <code>atlas</code> URL parameter
      * @returns {string}
      */
-    AtlasVolumeLocator: atlas_id => atlas_id + ".pack"
+    AtlasVolumeLocator: async atlas_id => fetch(atlas_id + ".pack").then(response => response.arrayBuffer())
 };

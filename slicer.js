@@ -1,6 +1,6 @@
 var voldata;
-function initvol(location,next){
-    console.log(location);
+function initvol(buffer,next){
+//    console.log(location);
     let start=Date.now();
 //    var img=document.createElement("img");
 //    img.onload=function(){
@@ -13,11 +13,11 @@ function initvol(location,next){
 //        next();
 //    };
 //    img.src=location;
-    var xhr=new XMLHttpRequest();
-    xhr.open("GET",location);
-    xhr.responseType="arraybuffer";
-    xhr.onload=function(){
-        let data=new Uint8Array(xhr.response);
+//    var xhr=new XMLHttpRequest();
+//    xhr.open("GET",location);
+//    xhr.responseType="arraybuffer";
+//    xhr.onload=function(){
+        let data=new Uint8Array(buffer);
         console.log("Download",data.length,Date.now()-start);
         data=inflate(data);
         console.log("Deflate",data.length,Date.now()-start);
@@ -25,8 +25,8 @@ function initvol(location,next){
         console.log("Decode",data.length,Date.now()-start);
         voldata=data;
         next();
-    };
-    xhr.send();
+//    };
+//    xhr.send();
 }
 
 function dataslice(ouv){

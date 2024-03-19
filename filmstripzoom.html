@@ -91,7 +91,8 @@
             }
             
 //            var args={atlas:"WHS_SD_Rat_v2_39um"};
-            function startup(){
+            var atlas;
+            async function startup(){
                 window.addEventListener("resize",fullscreen);
                 fullscreen();
                 
@@ -121,16 +122,17 @@
                 }
                 popup(`Loading atlas: ${args.atlas.replaceAll("_"," ")}`);
         
-                var xhr=new XMLHttpRequest();
-                xhr.open("GET",locators.AtlasLocator(args.atlas));
-                xhr.responseType="json";
-                xhr.onload=descriptorReady;
-                xhr.send();
-            }
-            
-            var atlas;
-            function descriptorReady(event){
-                atlas=event.target.response;
+//                var xhr=new XMLHttpRequest();
+//                xhr.open("GET",locators.AtlasLocator(args.atlas));
+//                xhr.responseType="json";
+//                xhr.onload=descriptorReady;
+//                xhr.send();
+//            }
+//            
+//            var atlas;
+//            function descriptorReady(event){
+//                atlas=event.target.response;
+                atlas = await locators.AtlasLocator(args.atlas);
                 for(var label of atlas.labels)
                     if(label.rgb){
                         label.r=parseInt(label.rgb.substr(0,2),16);
@@ -366,10 +368,11 @@
                 }
                 octx.putImageData(omgdata,0,0);
                 
-                var xhr=new XMLHttpRequest();
-                xhr.open("GET",locators.DZILocator(section_id));
-                xhr.onload=xmlReady;
-                xhr.send();
+//                var xhr=new XMLHttpRequest();
+//                xhr.open("GET",locators.DZILocator(section_id));
+//                xhr.onload=xmlReady;
+//                xhr.send();
+                locators.DZILocator(section_id).then(dzi=>xmlReady(dzi));
             }
             
             var overlay=document.createElement("canvas");
@@ -382,9 +385,10 @@
             var popscape=false;
             var zoomer;
             var cfg;
-            function xmlReady(event){
+            function xmlReady(dzi){
 //!!                var doc=event.target.responseXML.documentElement;
-                var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
+//                var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
+                var doc=new DOMParser().parseFromString(dzi,"text/xml").documentElement;
                 var size=doc.getElementsByTagName("Size").item(0);
                 cfg={
                     TileSize:parseInt(doc.getAttribute("TileSize")),
