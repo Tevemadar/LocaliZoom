@@ -440,15 +440,11 @@
                     cfg.MaxLevel++;
                 }
 
-                cfg.Key=function(level,x,y){
-                    return locators.TileLocator(section_id,this.MaxLevel-level,x,y,cfg.Format);
-                };
-                cfg.Load = async function (key, x, y) {
-                    const img = document.createElement("img");
-                    await new Promise(resolve => {
-                        img.onload = resolve;
-                        img.src = key;
-                    });
+//                cfg.Key=function(level,x,y){
+//                    return locators.TileLocator(section_id,this.MaxLevel-level,x,y,cfg.Format);
+//                };
+                cfg.Load = async function (level, x, y) {
+                    const img = await locators.TileLocator(section_id, cfg.MaxLevel-level, x, y, cfg.Format);
                     const canvas = document.createElement("canvas");
                     canvas.width = cfg.TileSize;
                     canvas.height = cfg.TileSize;

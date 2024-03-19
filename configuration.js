@@ -59,9 +59,14 @@ const locators = {
      * @param {type} format <code>Format</code> field (from the DZI descriptor, usually "png" or "jpg")
      * @returns {string}
      */
-    TileLocator: (section_id, level, x, y, format) =>
-        `${args.pyramids}/${section_id}.tif/${section_id}_files`+
-        `/${level}/${x}_${y}.${format}`,
+    TileLocator: async (section_id, level, x, y, format) => {
+        const img = document.createElement("img");
+        await new Promise(resolve => {
+            img.onload = resolve;
+            img.src = `${args.pyramids}/${section_id}.tif/${section_id}_files/${level}/${x}_${y}.${format}`;
+        });
+        return img;
+    },
     /**
      * Provide the link of the atlas descriptor, atlas data is often just next to LocaliZoom,
      * and appending a .json extension is enough

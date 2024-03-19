@@ -130,7 +130,7 @@ var filmstrip={};
                 ctx.fillRect(x*160-pos+20-10,20,128+10+10,128);
             }
             if(item.icon===null){
-                item.icon=locators.DZILocator(item.id).then(dzi=>{
+                item.icon=locators.DZILocator(item.id).then(async dzi=>{
 //                item.icon=new XMLHttpRequest();
 //                item.icon.open("GET",locators.DZILocator(item.id));
 //                item.icon.onload=function(event){
@@ -153,13 +153,15 @@ var filmstrip={};
                         width=(width+1)>>1;
                         height=(height+1)>>1;
                     }
-                    var img=document.createElement("img");
-                    img.onload=function(event){
-                        item.icon=img;
-                        redraw();
-//                        console.log(""+item.icon);
-                    };
-                    img.src=locators.TileLocator(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
+                    item.icon=await locators.TileLocator(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
+                    redraw();
+//                    var img=document.createElement("img");
+//                    img.onload=function(event){
+//                        item.icon=img;
+//                        redraw();
+////                        console.log(""+item.icon);
+//                    };
+//                    img.src=locators.TileLocator(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
                 });
 //                item.icon.send();
             }
