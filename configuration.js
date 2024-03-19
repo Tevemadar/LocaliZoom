@@ -27,7 +27,7 @@ async function transformSeries(series) {
     document.getElementById("nlcolor").value="#00FFFF";
 }
 
-const locators = {
+const loaders = {
     /**
      * Provide the link of an actual QuickNII/VisuAlign JSON.
      * <br>
@@ -35,7 +35,7 @@ const locators = {
      * @param {string} series_id <code>series</code> URL parameter
      * @returns {string} 
      */
-    SeriesLocator: async series_id => fetch(series_id).then(response => response.json()),
+    SeriesLoader: async series_id => fetch(series_id).then(response => response.json()),
     /**
      * Provide the link of an actual DZI descriptor.
      * <br>
@@ -45,7 +45,7 @@ const locators = {
      * @param {string} section_id <code>filename</code> field of a section
      * @returns {string}
      */
-    DZILocator: async section_id => fetch(`${args.pyramids}/${section_id}.tif/${section_id}.dzi`).then(response => response.text()),
+    DZILoader: async section_id => fetch(`${args.pyramids}/${section_id}.tif/${section_id}.dzi`).then(response => response.text()),
     /**
      * Provide the link of an actual image tile.
      * <br>
@@ -59,7 +59,7 @@ const locators = {
      * @param {type} format <code>Format</code> field (from the DZI descriptor, usually "png" or "jpg")
      * @returns {string}
      */
-    TileLocator: async (section_id, level, x, y, format) => {
+    TileLoader: async (section_id, level, x, y, format) => {
         const img = document.createElement("img");
         await new Promise(resolve => {
             img.onload = resolve;
@@ -73,12 +73,12 @@ const locators = {
      * @param {type} atlas_id <code>atlas</code> URL parameter
      * @returns {string}
      */
-    AtlasLocator: async atlas_id => fetch(atlas_id + ".json").then(response => response.json()),
+    AtlasLoader: async atlas_id => fetch(atlas_id + ".json").then(response => response.json()),
     /**
      * Provide the link of the atlas descriptor, atlas data is often just next to LocaliZoom,
      * and appending a .pack extension is enough
      * @param {type} atlas_id <code>atlas</code> URL parameter
      * @returns {string}
      */
-    AtlasVolumeLocator: async atlas_id => fetch(atlas_id + ".pack").then(response => response.arrayBuffer())
+    AtlasVolumeLoader: async atlas_id => fetch(atlas_id + ".pack").then(response => response.arrayBuffer())
 };

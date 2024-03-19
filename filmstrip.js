@@ -10,7 +10,7 @@ var filmstrip={};
 
     var volumeready=false;
     this.start=async function(){
-        initvol(await locators.AtlasVolumeLocator(args.atlas),volumeReady);
+        initvol(await loaders.AtlasVolumeLoader(args.atlas),volumeReady);
     };
 //    async function volumeReady(event){
 //        cover();
@@ -31,7 +31,7 @@ var filmstrip={};
         cover();
         volumeready=true;
         //metahack=event.target.response;//.slices;
-        metahack=await locators.SeriesLocator(args.series);
+        metahack=await loaders.SeriesLoader(args.series);
         await transformSeries(metahack);
         var slices=metahack.slices;
         propagation.propagate(slices);
@@ -130,7 +130,7 @@ var filmstrip={};
                 ctx.fillRect(x*160-pos+20-10,20,128+10+10,128);
             }
             if(item.icon===null){
-                item.icon=locators.DZILocator(item.id).then(async dzi=>{
+                item.icon=loaders.DZILoader(item.id).then(async dzi=>{
 //                item.icon=new XMLHttpRequest();
 //                item.icon.open("GET",locators.DZILocator(item.id));
 //                item.icon.onload=function(event){
@@ -153,7 +153,7 @@ var filmstrip={};
                         width=(width+1)>>1;
                         height=(height+1)>>1;
                     }
-                    item.icon=await locators.TileLocator(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
+                    item.icon=await loaders.TileLoader(item.id,maxlevel-level,0,0,doc.getAttribute("Format"));
                     redraw();
 //                    var img=document.createElement("img");
 //                    img.onload=function(event){

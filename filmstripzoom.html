@@ -132,7 +132,7 @@
 //            var atlas;
 //            function descriptorReady(event){
 //                atlas=event.target.response;
-                atlas = await locators.AtlasLocator(args.atlas);
+                atlas = await loaders.AtlasLoader(args.atlas);
                 for(var label of atlas.labels)
                     if(label.rgb){
                         label.r=parseInt(label.rgb.substr(0,2),16);
@@ -372,7 +372,7 @@
 //                xhr.open("GET",locators.DZILocator(section_id));
 //                xhr.onload=xmlReady;
 //                xhr.send();
-                locators.DZILocator(section_id).then(dzi=>xmlReady(dzi));
+                loaders.DZILoader(section_id).then(dzi=>xmlReady(dzi));
             }
             
             var overlay=document.createElement("canvas");
@@ -444,7 +444,7 @@
 //                    return locators.TileLocator(section_id,this.MaxLevel-level,x,y,cfg.Format);
 //                };
                 cfg.Load = async function (level, x, y) {
-                    const img = await locators.TileLocator(section_id, cfg.MaxLevel-level, x, y, cfg.Format);
+                    const img = await loaders.TileLoader(section_id, cfg.MaxLevel-level, x, y, cfg.Format);
                     const canvas = document.createElement("canvas");
                     canvas.width = cfg.TileSize;
                     canvas.height = cfg.TileSize;
