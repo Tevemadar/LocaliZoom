@@ -633,12 +633,12 @@
                     var trf=atlas.transformations[document.getElementById("traf").selectedIndex];
                     var xyz1=mult([[fx,fy,fz,1]],trf.matrix)[0];
                     div.innerText="(x="+xyz1[0].toPrecision(5)+" y="+xyz1[1].toPrecision(5)+" z="+xyz1[2].toPrecision(5)+")";
-                    nx=Math.round(nx*overlaywidth);
-                    ny=Math.round(ny*overlayheight);
+                    var lx=Math.round(mx/cfg.Width*overlaywidth);
+                    var ly=Math.round(my/cfg.Height*overlayheight);
                     var oldpop=pop;
                     pop=null;
-                    if((nx>=0)&&(nx<overlaywidth)&&(ny>=0)&&(ny<overlayheight)){
-                        pop=overlaydata[nx+ny*overlaywidth];
+                    if((lx>=0)&&(lx<overlaywidth)&&(ly>=0)&&(ly<overlayheight)){
+                        pop=overlaydata[lx+ly*overlaywidth];
                         pop=pop===0?null:atlas.labels[pop];
                     }
                     if(oldpop!==pop || jump)drawImage();
