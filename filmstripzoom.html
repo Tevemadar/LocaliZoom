@@ -58,7 +58,7 @@
             // implied argument for backward compatibilty
             const args={atlas:"WHS_SD_Rat_v2_39um"};
             for(let pair of window.location.search.substring(1).split("&")){
-               pair=pair.split("=");
+               pair=pair.split(/=(.*)/);
                args[pair[0]]=pair[1] || true;
             }
         </script>
