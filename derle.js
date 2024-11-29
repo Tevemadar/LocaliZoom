@@ -45,7 +45,10 @@ function derle(data, method) {
         return d;
     }
     function readN() {
-        throw "Ehm, please implement readN";
+        let d = data[readpos++];
+        if (d > 127)
+            d = (d & 127) + (readN() << 7);
+        return d;
     }
 //    function write(d) {
 //        if (writepos >= result.length)
