@@ -22,9 +22,9 @@ async function transformSeries(series) {
      * Small hack: the demo series consists of dark images, overlay colors are set to light here.
      * This could be an URL parameter too, maybe it becomes one in the future.
      */
-    document.getElementById("outline").value="#FFFFFF";
-    document.getElementById("ancolor").value="#00FFFF";
-    document.getElementById("nlcolor").value="#00FFFF";
+    document.getElementById("outline").value = "#FFFFFF";
+    document.getElementById("ancolor").value = "#00FFFF";
+    document.getElementById("nlcolor").value = "#00FFFF";
 }
 
 const loaders = {

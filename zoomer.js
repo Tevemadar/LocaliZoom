@@ -12,8 +12,8 @@ class ZoomView {
     stop() {
         this.#view = null;
     }
-    static keyfunc=(l,x,y)=>`${l}-${x}-${y}`;
-    async prepare(view) {
+    static keyfunc = (l, x, y) => `${l}-${x}-${y}`;
+            async prepare(view) {
         this.redraw = drawImage;
         let {cutx, cuty, cutw, cuth} = view;
         const curr = this.#view = {cutx, cuty, cutw, cuth};
@@ -64,7 +64,7 @@ class ZoomView {
                         let mask = 0;
                         let lvl = level;
 //                        let key = dizcfg.Key(lvl, ex, ey);
-                        let tile = dizcache.get(ZoomView.keyfunc(lvl,ex,ey));
+                        let tile = dizcache.get(ZoomView.keyfunc(lvl, ex, ey));
                         while (!tile && lvl < MaxLevel) {
                             clip /= 2;
                             mask = (mask << 1) + 1;
@@ -72,7 +72,7 @@ class ZoomView {
                             ey >>= 1;
                             lvl++;
 //                            key = dizcfg.Key(lvl, ex, ey);
-                            tile = dizcache.get(ZoomView.keyfunc(lvl,ex,ey));
+                            tile = dizcache.get(ZoomView.keyfunc(lvl, ex, ey));
                         }
                         if (tile)
                             ctx.drawImage(tile, (ox & mask) * clip, (oy & mask) * clip, clip, clip, x * TileSize, y * TileSize, TileSize, TileSize);

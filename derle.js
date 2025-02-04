@@ -25,8 +25,8 @@ function derle(data, method) {
 //        let c = cread();
 //        while (c-- > 0)
 //            write(d);
-        let d = dread(),
-            c = cread() + 1;
+        let d = dread();
+        let c = cread() + 1;
         if (writepos + c >= result.length)
             resize(result.length * 2);
         result.fill(d, writepos, writepos + c);

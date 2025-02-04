@@ -5,28 +5,83 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width">
         <style>
-            body{margin: 0;padding: 0; overflow:hidden;}
-            canvas{display: block;cursor: crosshair;outline: none;}
-            canvas#scroller{cursor: pointer;}
-            div{display: inline-block;}
-            #traf{width: 130px;}
-            #status{padding: 5px;background: #F0F0F0;width: 900px;/*height: 20px;*/}
-            #coords{float: right;padding-right: 5px;}
-            #outline{float:right;height: 18px;}
-            #outlinedesc{float:right;padding-right: 5px;}
-            #alpha{float:right;height: 15px;width: 100px;}
-            #alphadesc{float:right;padding-right: 5px;}
-/*            #bright{float:right;height: 15px;width: 100px;}
-            #brightdesc{float:right;padding-right: 5px;}*/
-            #tools{background: #F0F0F0;height: 20px;padding: 5px;position: absolute;left:0;}
+            body{
+                margin: 0;
+                padding: 0;
+                overflow:hidden;
+            }
+            canvas{
+                display: block;
+                cursor: crosshair;
+                outline: none;
+            }
+            canvas#scroller{
+                cursor: pointer;
+            }
+            div{
+                display: inline-block;
+            }
+            #traf{
+                width: 130px;
+            }
+            #status{
+                padding: 5px;
+                background: #F0F0F0;
+                width: 900px;/*height: 20px;*/
+            }
+            #coords{
+                float: right;
+                padding-right: 5px;
+            }
+            #outline{
+                float:right;
+                height: 18px;
+            }
+            #outlinedesc{
+                float:right;
+                padding-right: 5px;
+            }
+            #alpha{
+                float:right;
+                height: 15px;
+                width: 100px;
+            }
+            #alphadesc{
+                float:right;
+                padding-right: 5px;
+            }
+            /*            #bright{float:right;height: 15px;width: 100px;}
+                        #brightdesc{float:right;padding-right: 5px;}*/
+            #tools{
+                background: #F0F0F0;
+                height: 20px;
+                padding: 5px;
+                position: absolute;
+                left:0;
+            }
             /*#toolsinner{display: none;}*/
             #toggleAN,#toggleNL,
             #antools,
-            #nltools{display: none;}
-            #helpbutton{float: right;padding: 5px;}
-            #help{display: none;width: 500px;background: #F0F0F0;position: absolute;padding: 10px;}
-            #metadata{display: block;position: absolute;text-align: center;}
-            
+            #nltools{
+                display: none;
+            }
+            #helpbutton{
+                float: right;
+                padding: 5px;
+            }
+            #help{
+                display: none;
+                width: 500px;
+                background: #F0F0F0;
+                position: absolute;
+                padding: 10px;
+            }
+            #metadata{
+                display: block;
+                position: absolute;
+                text-align: center;
+            }
+
             #cover{
                 background: darkgray;
                 opacity: 0.5;
@@ -56,10 +111,10 @@
         </style>
         <script>
             // implied argument for backward compatibilty
-            const args={atlas:"WHS_SD_Rat_v2_39um"};
-            for(let pair of window.location.search.substring(1).split("&")){
-               pair=pair.split(/=(.*)/);
-               args[pair[0]]=pair[1] || true;
+            const args = {atlas: "WHS_SD_Rat_v2_39um"};
+            for (let pair of window.location.search.substring(1).split("&")) {
+                pair = pair.split(/=(.*)/);
+                args[pair[0]] = pair[1] || true;
             }
         </script>
         <script src="configuration.js"></script>
@@ -75,53 +130,54 @@
         <script src="https://cdn.jsdelivr.net/gh/Tevemadar/PackXLSX.js/xlsxwriter.min.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/Tevemadar/NetUnzip/inflater.min.js"></script>
         <script>
-            function fullscreen(){
-                var zc=document.getElementById("zoomcanvas");
-                var sc=document.getElementById("scroller");
-                sc.addEventListener("wheel",filmstrip.mwheel,true);
-                
-                var help=document.getElementById("help");
-                document.getElementById("metadata").style.top=help.style.top=zc.offsetTop+"px";
-                help.style.left=window.innerWidth-520+"px";
-                
-                filmstrip.setwidth(zc.width=sc.width=canvaswidth=window.innerWidth);
-                filmstrip.setheight(sc.height=128+20);
-                zc.height=canvasheight=window.innerHeight-zc.offsetTop-128-20;
-                if(zoomer)zoomer.home();
+            function fullscreen() {
+                var zc = document.getElementById("zoomcanvas");
+                var sc = document.getElementById("scroller");
+                sc.addEventListener("wheel", filmstrip.mwheel, true);
+
+                var help = document.getElementById("help");
+                document.getElementById("metadata").style.top = help.style.top = zc.offsetTop + "px";
+                help.style.left = window.innerWidth - 520 + "px";
+
+                filmstrip.setwidth(zc.width = sc.width = canvaswidth = window.innerWidth);
+                filmstrip.setheight(sc.height = 128 + 20);
+                zc.height = canvasheight = window.innerHeight - zc.offsetTop - 128 - 20;
+                if (zoomer)
+                    zoomer.home();
             }
-            
+
 //            var args={atlas:"WHS_SD_Rat_v2_39um"};
             var atlas;
-            async function startup(){
-                window.addEventListener("resize",fullscreen);
+            async function startup() {
+                window.addEventListener("resize", fullscreen);
                 fullscreen();
-                
+
 //                var pairs=window.location.search.substring(1).split("&");
 //                pairs.forEach(function(pair){
 //                   pair=pair.split("=");
 //                   args[pair[0]]=pair[1] || true;
 //                });
-                if(args.view){
+                if (args.view) {
                     filmstrip.setalpha(0);
                 }
-                args.view=!args.tools;
-                args.prev=true;
-                if(args.view){
-                    document.getElementById("tools").style.display="none";
-                }else{
-                    document.getElementById("tools").style.top=document.getElementById("status").offsetHeight+"px";
-                    if(args.nl){
-                        document.getElementById("toggleNL").style.display="inline";
-                    }else{
-                        document.getElementById("toggleAN").style.display="inline";
+                args.view = !args.tools;
+                args.prev = true;
+                if (args.view) {
+                    document.getElementById("tools").style.display = "none";
+                } else {
+                    document.getElementById("tools").style.top = document.getElementById("status").offsetHeight + "px";
+                    if (args.nl) {
+                        document.getElementById("toggleNL").style.display = "inline";
+                    } else {
+                        document.getElementById("toggleAN").style.display = "inline";
                     }
                 }
-                if(args.opacity){
-                    document.getElementById("alpha").value=args.opacity;
+                if (args.opacity) {
+                    document.getElementById("alpha").value = args.opacity;
                     //document.getElementById("outline").value="#FFFFFF";
                 }
-                popup(`Loading atlas: ${args.atlas.replaceAll("_"," ")}`);
-        
+                popup(`Loading atlas: ${args.atlas.replaceAll("_", " ")}`);
+
 //                var xhr=new XMLHttpRequest();
 //                xhr.open("GET",locators.AtlasLocator(args.atlas));
 //                xhr.responseType="json";
@@ -133,216 +189,218 @@
 //            function descriptorReady(event){
 //                atlas=event.target.response;
                 atlas = await loaders.AtlasLoader(args.atlas);
-                for(var label of atlas.labels)
-                    if(label.rgb){
-                        label.r=parseInt(label.rgb.substr(0,2),16);
-                        label.g=parseInt(label.rgb.substr(2,2),16);
-                        label.b=parseInt(label.rgb.substr(4,2),16);
+                for (var label of atlas.labels)
+                    if (label.rgb) {
+                        label.r = parseInt(label.rgb.substr(0, 2), 16);
+                        label.g = parseInt(label.rgb.substr(2, 2), 16);
+                        label.b = parseInt(label.rgb.substr(4, 2), 16);
                     }
                 atlas.transformations.unshift({
-                    name:"File coords",
-                    matrix:[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+                    name: "File coords",
+                    matrix: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
                 });
-                for(var trf of atlas.transformations){
-                    var opt=document.createElement("option");
-                    opt.text=trf.name;
+                for (var trf of atlas.transformations) {
+                    var opt = document.createElement("option");
+                    opt.text = trf.name;
                     document.getElementById("traf").appendChild(opt);
                 }
                 filmstrip.start();
             }
-            
-            var markers=[];
-            var poi=[];
-            var allmarkers={};
-            var allpoi={};
-            var ouv={};
+
+            var markers = [];
+            var poi = [];
+            var allmarkers = {};
+            var allpoi = {};
+            var ouv = {};
             var section_id;
-            
+
             var vertices;
             var triangles;
             var triback;
-            function triangulate(){
+            function triangulate() {
 //                vertices=[[0,0],[cfg.Width,0],[0,cfg.Height],[cfg.Width,cfg.Height]];
-                vertices=[
-                    [-cfg.Width/10,-cfg.Height/10,-cfg.Width/10,-cfg.Height/10],
-                    [cfg.Width*1.1,-cfg.Height/10,cfg.Width*1.1,-cfg.Height/10],
-                    [-cfg.Width/10,cfg.Height*1.1,-cfg.Width/10,cfg.Height*1.1],
-                    [cfg.Width*1.1,cfg.Height*1.1,cfg.Width*1.1,cfg.Height*1.1]];
-                triangles=[[0,1,2],[1,2,3]];
+                vertices = [
+                    [-cfg.Width / 10, -cfg.Height / 10, -cfg.Width / 10, -cfg.Height / 10],
+                    [cfg.Width * 1.1, -cfg.Height / 10, cfg.Width * 1.1, -cfg.Height / 10],
+                    [-cfg.Width / 10, cfg.Height * 1.1, -cfg.Width / 10, cfg.Height * 1.1],
+                    [cfg.Width * 1.1, cfg.Height * 1.1, cfg.Width * 1.1, cfg.Height * 1.1]];
+                triangles = [[0, 1, 2], [1, 2, 3]];
                 // i<j j*(j-1)/2+i
-                function ix(i,j){return j*(j-1)/2+i;}
+                function ix(i, j) {
+                    return j * (j - 1) / 2 + i;
+                }
 //                var edges=new Array((markers.length+4)*(markers.length+5)/2).fill(0);
-                var edges=[2,2,2,0,2,2];
-                
+                var edges = [2, 2, 2, 0, 2, 2];
+
 //                var smallorg=[[0,0],[overlaywidth-1,0],[0,overlayheight-1],[overlaywidth-1,overlayheight-1]];
-                var smallorg=[ // todo: get rid of it
-                    [-overlaywidth/10,-overlayheight/10],
-                    [(overlaywidth-1)*1.1,-overlayheight/10],
-                    [-overlaywidth/10,(overlayheight-1)*1.1],
-                    [(overlaywidth-1)*1.1,(overlayheight-1)*1.1]];
+                var smallorg = [// todo: get rid of it
+                    [-overlaywidth / 10, -overlayheight / 10],
+                    [(overlaywidth - 1) * 1.1, -overlayheight / 10],
+                    [-overlaywidth / 10, (overlayheight - 1) * 1.1],
+                    [(overlaywidth - 1) * 1.1, (overlayheight - 1) * 1.1]];
 //                var small=[[0,0],[overlaywidth-1,0],[0,overlayheight-1],[overlaywidth-1,overlayheight-1]];
-                var small=[
-                    [-overlaywidth/10,-overlayheight/10],
-                    [(overlaywidth-1)*1.1,-overlayheight/10],
-                    [-overlaywidth/10,(overlayheight-1)*1.1],
-                    [(overlaywidth-1)*1.1,(overlayheight-1)*1.1]];
-                
-                for(var marker of markers){
-                    var D=[marker.nx,marker.ny,marker.x,marker.y];
-                    var found=false;
-                    var remove=[];
-                    for(var i=0;i<triangles.length;i++){
-                        var triangle=triangles[i];
-                        var A=vertices[triangle[0]];
-                        var B=vertices[triangle[1]];
-                        var C=vertices[triangle[2]];
-                        if(!found && intri(A,B,C,D))
-                            found=true;
-                        if(incirc(A,B,C,D))
+                var small = [
+                    [-overlaywidth / 10, -overlayheight / 10],
+                    [(overlaywidth - 1) * 1.1, -overlayheight / 10],
+                    [-overlaywidth / 10, (overlayheight - 1) * 1.1],
+                    [(overlaywidth - 1) * 1.1, (overlayheight - 1) * 1.1]];
+
+                for (var marker of markers) {
+                    var D = [marker.nx, marker.ny, marker.x, marker.y];
+                    var found = false;
+                    var remove = [];
+                    for (var i = 0; i < triangles.length; i++) {
+                        var triangle = triangles[i];
+                        var A = vertices[triangle[0]];
+                        var B = vertices[triangle[1]];
+                        var C = vertices[triangle[2]];
+                        if (!found && intri(A, B, C, D))
+                            found = true;
+                        if (incirc(A, B, C, D))
                             remove.unshift(i);
                     }
-                    if(found){
-                        for(var i of remove){
-                            var triangle=triangles.splice(i,1)[0];
-                            var A=triangle[0];
-                            var B=triangle[1];
-                            var C=triangle[2];
-                            edges[ix(A,B)]--;
-                            edges[ix(A,C)]--;
-                            edges[ix(B,C)]--;
+                    if (found) {
+                        for (var i of remove) {
+                            var triangle = triangles.splice(i, 1)[0];
+                            var A = triangle[0];
+                            var B = triangle[1];
+                            var C = triangle[2];
+                            edges[ix(A, B)]--;
+                            edges[ix(A, C)]--;
+                            edges[ix(B, C)]--;
                         }
-                        var es=[];
-                        for(var j=1;j<vertices.length;j++)
-                            for(var i=0;i<j;i++)
-                                if(edges[ix(i,j)]===1){
-                                    triangles.push([i,j,vertices.length]);
-                                    es.push([i,j],[i,vertices.length],[j,vertices.length]);
+                        var es = [];
+                        for (var j = 1; j < vertices.length; j++)
+                            for (var i = 0; i < j; i++)
+                                if (edges[ix(i, j)] === 1) {
+                                    triangles.push([i, j, vertices.length]);
+                                    es.push([i, j], [i, vertices.length], [j, vertices.length]);
                                 }
 //                        console.log(es);
 //                        console.log(edges.toString());
-                        for(var e of es)
-                            edges[ix(e[0],e[1])]=2; //..
+                        for (var e of es)
+                            edges[ix(e[0], e[1])] = 2; //..
 //                        console.log(edges.toString());
                         vertices.push(D);
-                        smallorg.push([marker.x*overlaywidth/cfg.Width,marker.y*overlayheight/cfg.Height]);
-                        small.push([marker.nx*overlaywidth/cfg.Width,marker.ny*overlayheight/cfg.Height]);
+                        smallorg.push([marker.x * overlaywidth / cfg.Width, marker.y * overlayheight / cfg.Height]);
+                        small.push([marker.nx * overlaywidth / cfg.Width, marker.ny * overlayheight / cfg.Height]);
                     }
                 }
-                
-                triback=[];
-                for(var triangle of triangles){
-                    var A=small[triangle[0]];
-                    var B=small[triangle[1]];
-                    var C=small[triangle[2]];
+
+                triback = [];
+                for (var triangle of triangles) {
+                    var A = small[triangle[0]];
+                    var B = small[triangle[1]];
+                    var C = small[triangle[2]];
                     triangle.push(
-                        Math.min(A[0],B[0],C[0]), //3
-                        Math.max(A[0],B[0],C[0]), //4
-                        Math.min(A[1],B[1],C[1]), //5
-                        Math.max(A[1],B[1],C[1]), //6
-                        inv3x3([                  //7
-                            [B[0]-A[0],B[1]-A[1],0],
-                            [C[0]-A[0],C[1]-A[1],0],
-                            [A[0],A[1],1]
-                        ]));
-                    A=vertices[triangle[0]];
-                    B=vertices[triangle[1]];
-                    C=vertices[triangle[2]];
+                            Math.min(A[0], B[0], C[0]), //3
+                            Math.max(A[0], B[0], C[0]), //4
+                            Math.min(A[1], B[1], C[1]), //5
+                            Math.max(A[1], B[1], C[1]), //6
+                            inv3x3([//7
+                                [B[0] - A[0], B[1] - A[1], 0],
+                                [C[0] - A[0], C[1] - A[1], 0],
+                                [A[0], A[1], 1]
+                            ]));
+                    A = vertices[triangle[0]];
+                    B = vertices[triangle[1]];
+                    C = vertices[triangle[2]];
                     triback.push([
                         triangle[0],
                         triangle[1],
                         triangle[2],
-                        Math.min(A[0],B[0],C[0]), //3
-                        Math.max(A[0],B[0],C[0]), //4
-                        Math.min(A[1],B[1],C[1]), //5
-                        Math.max(A[1],B[1],C[1]), //6
-                        inv3x3([                  //7
-                            [B[0]-A[0],B[1]-A[1],0],
-                            [C[0]-A[0],C[1]-A[1],0],
-                            [A[0],A[1],1]
+                        Math.min(A[0], B[0], C[0]), //3
+                        Math.max(A[0], B[0], C[0]), //4
+                        Math.min(A[1], B[1], C[1]), //5
+                        Math.max(A[1], B[1], C[1]), //6
+                        inv3x3([//7
+                            [B[0] - A[0], B[1] - A[1], 0],
+                            [C[0] - A[0], C[1] - A[1], 0],
+                            [A[0], A[1], 1]
                         ])
                     ]);
                 }
-                
-                var i=0,pi=0;
-                var c=[[0,0,1]];
-                odta=omgdata.data;
+
+                var i = 0, pi = 0;
+                var c = [[0, 0, 1]];
+                odta = omgdata.data;
 //                var color=show_outline.value!=="#ffffff" && show_outline.value;
-                var color=document.getElementById("alpha").value==="100" && document.getElementById("outline").value;
-                if(color){
-                    color=[
-                        parseInt(color.substring(1,3),16),
-                        parseInt(color.substring(3,5),16),
-                        parseInt(color.substring(5,7),16)
+                var color = document.getElementById("alpha").value === "100" && document.getElementById("outline").value;
+                if (color) {
+                    color = [
+                        parseInt(color.substring(1, 3), 16),
+                        parseInt(color.substring(3, 5), 16),
+                        parseInt(color.substring(5, 7), 16)
                     ];
                 }
-                for(var y=0;y<overlayheight;y++){
-                    c[0][1]=y;
-                    for(var x=0;x<overlaywidth;x++){
-                        c[0][0]=x;
-                        var found=false;
-                        for(var triangle of triangles)
-                            if(x>=triangle[3] && x<=triangle[4] && y>=triangle[5] && y<=triangle[6]){
-                                var uv1=mult(c,triangle[7])[0];
-                                if(uv1[0]>=0 && uv1[0]<1 && uv1[1]>=0 && uv1[1]<1 && uv1[0]+uv1[1]<=1){
-                                    var A=smallorg[triangle[0]];
-                                    var B=smallorg[triangle[1]];
-                                    var C=smallorg[triangle[2]];
-                                    var xx=Math.round(A[0]+(B[0]-A[0])*uv1[0]+(C[0]-A[0])*uv1[1]);
-                                    var yy=Math.round(A[1]+(B[1]-A[1])*uv1[0]+(C[1]-A[1])*uv1[1]);
-                                    var id=overlayorg[xx+yy*overlaywidth]||0; //!!?? hack, todo 7608 (9?)
-                                    overlaydata[i++]=id;
-                                    if(id!==0){
-                                        var l=atlas.labels[id];
-    //                                    try{
-                                        odta[pi++]=l.r;
-    //                                }catch(e){
-    //                                    console.log(uv1,xx,yy,id);
-    //                                }
-                                        odta[pi++]=l.g;
-                                        odta[pi++]=l.b;
-                                        odta[pi++]=255;
-                                    }else{
-                                        odta[pi++]=odta[pi++]=odta[pi++]=odta[pi++]=0;
+                for (var y = 0; y < overlayheight; y++) {
+                    c[0][1] = y;
+                    for (var x = 0; x < overlaywidth; x++) {
+                        c[0][0] = x;
+                        var found = false;
+                        for (var triangle of triangles)
+                            if (x >= triangle[3] && x <= triangle[4] && y >= triangle[5] && y <= triangle[6]) {
+                                var uv1 = mult(c, triangle[7])[0];
+                                if (uv1[0] >= 0 && uv1[0] < 1 && uv1[1] >= 0 && uv1[1] < 1 && uv1[0] + uv1[1] <= 1) {
+                                    var A = smallorg[triangle[0]];
+                                    var B = smallorg[triangle[1]];
+                                    var C = smallorg[triangle[2]];
+                                    var xx = Math.round(A[0] + (B[0] - A[0]) * uv1[0] + (C[0] - A[0]) * uv1[1]);
+                                    var yy = Math.round(A[1] + (B[1] - A[1]) * uv1[0] + (C[1] - A[1]) * uv1[1]);
+                                    var id = overlayorg[xx + yy * overlaywidth] || 0; //!!?? hack, todo 7608 (9?)
+                                    overlaydata[i++] = id;
+                                    if (id !== 0) {
+                                        var l = atlas.labels[id];
+                                        //                                    try{
+                                        odta[pi++] = l.r;
+                                        //                                }catch(e){
+                                        //                                    console.log(uv1,xx,yy,id);
+                                        //                                }
+                                        odta[pi++] = l.g;
+                                        odta[pi++] = l.b;
+                                        odta[pi++] = 255;
+                                    } else {
+                                        odta[pi++] = odta[pi++] = odta[pi++] = odta[pi++] = 0;
                                     }
-                                    found=true;
+                                    found = true;
                                     break;
                                 }
                             }
-                        if(!found){ 
-                            overlaydata[i++]=0;
-                            odta[pi++]=0;
-                            odta[pi++]=0;
-                            odta[pi++]=0;
-                            odta[pi++]=0;
+                        if (!found) {
+                            overlaydata[i++] = 0;
+                            odta[pi++] = 0;
+                            odta[pi++] = 0;
+                            odta[pi++] = 0;
+                            odta[pi++] = 0;
                         }
-                        if(color){
-                            if(x===0 || y===0 || (overlaydata[i-1]===overlaydata[i-2] && overlaydata[i-1]===overlaydata[i-1-overlaywidth]))
-                                odta[pi-1]=odta[pi-2]=odta[pi-3]=odta[pi-4]=0;
-                            else{
-                                odta[pi-4]=color[0];
-                                odta[pi-3]=color[1];
-                                odta[pi-2]=color[2];
-                                odta[pi-1]=255;
+                        if (color) {
+                            if (x === 0 || y === 0 || (overlaydata[i - 1] === overlaydata[i - 2] && overlaydata[i - 1] === overlaydata[i - 1 - overlaywidth]))
+                                odta[pi - 1] = odta[pi - 2] = odta[pi - 3] = odta[pi - 4] = 0;
+                            else {
+                                odta[pi - 4] = color[0];
+                                odta[pi - 3] = color[1];
+                                odta[pi - 2] = color[2];
+                                odta[pi - 1] = 255;
                             }
                         }
                     }
                 }
-                octx.putImageData(omgdata,0,0);
+                octx.putImageData(omgdata, 0, 0);
             }
 
-            function dispatchOuv(newouv){
-                if(section_id){
-                    allmarkers[section_id]=markers;
-                    allpoi[section_id]=poi;
+            function dispatchOuv(newouv) {
+                if (section_id) {
+                    allmarkers[section_id] = markers;
+                    allpoi[section_id] = poi;
                 }
-                ouv=newouv;
-                section_id=ouv["id"];
+                ouv = newouv;
+                section_id = ouv["id"];
 //                if(allmarkers[section_id]){
 //                    markers=allmarkers[section_id];
 //                }else{
 //                    markers=[];
 //                }
-                
+
 //                var xhr=new XMLHttpRequest();
 //    
 //                xhr.open("GET",locators.RLELocator(nifti,ouv.ox,ouv.oy,ouv.oz,ouv.ux,ouv.uy,ouv.uz,ouv.vx,ouv.vy,ouv.vz));
@@ -350,93 +408,93 @@
 //                xhr.responseType="arraybuffer";
 //                xhr.onload=overlayReady;
 //                xhr.send();
-                var data=dataslice(ouv);
-                var w=overlay.width=overlaywidth=data.width;
-                var h=overlay.height=overlayheight=data.height;
-                octx=overlay.getContext("2d");
-                omgdata=octx.createImageData(w,h);
-                odta=omgdata.data;
-                overlaydata=new Uint16Array(w*h);
+                var data = dataslice(ouv);
+                var w = overlay.width = overlaywidth = data.width;
+                var h = overlay.height = overlayheight = data.height;
+                octx = overlay.getContext("2d");
+                omgdata = octx.createImageData(w, h);
+                odta = omgdata.data;
+                overlaydata = new Uint16Array(w * h);
                 //overlayorg=new Uint16Array(w*h);
-                var d=overlayorg=data.data;
-                for(var i=0,is=0;i<d.length;i++){
-                    var col=atlas.labels[overlaydata[i]=d[i]];
-                    odta[is++]=col.r;
-                    odta[is++]=col.g;
-                    odta[is++]=col.b;
-                    odta[is++]=255;
+                var d = overlayorg = data.data;
+                for (var i = 0, is = 0; i < d.length; i++) {
+                    var col = atlas.labels[overlaydata[i] = d[i]];
+                    odta[is++] = col.r;
+                    odta[is++] = col.g;
+                    odta[is++] = col.b;
+                    odta[is++] = 255;
                 }
-                octx.putImageData(omgdata,0,0);
-                
+                octx.putImageData(omgdata, 0, 0);
+
 //                var xhr=new XMLHttpRequest();
 //                xhr.open("GET",locators.DZILocator(section_id));
 //                xhr.onload=xmlReady;
 //                xhr.send();
-                loaders.DZILoader(section_id).then(dzi=>xmlReady(dzi));
+                loaders.DZILoader(section_id).then(dzi => xmlReady(dzi));
             }
-            
-            var overlay=document.createElement("canvas");
-            var overlaydata,overlayorg;
+
+            var overlay = document.createElement("canvas");
+            var overlaydata, overlayorg;
             var overlaywidth;
             var overlayheight;
-            var octx,omgdata,odta;
+            var octx, omgdata, odta;
 
-            var pop=null;
-            var popscape=false;
+            var pop = null;
+            var popscape = false;
             var zoomer;
             var cfg;
-            function xmlReady(dzi){
+            function xmlReady(dzi) {
 //!!                var doc=event.target.responseXML.documentElement;
 //                var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
-                var doc=new DOMParser().parseFromString(dzi,"text/xml").documentElement;
-                var size=doc.getElementsByTagName("Size").item(0);
-                cfg={
-                    TileSize:parseInt(doc.getAttribute("TileSize")),
-                    Overlap:parseInt(doc.getAttribute("Overlap")),
-                    Format:doc.getAttribute("Format"),
-                    Width:parseInt(size.getAttribute("Width")),
-                    Height:parseInt(size.getAttribute("Height")),
+                var doc = new DOMParser().parseFromString(dzi, "text/xml").documentElement;
+                var size = doc.getElementsByTagName("Size").item(0);
+                cfg = {
+                    TileSize: parseInt(doc.getAttribute("TileSize")),
+                    Overlap: parseInt(doc.getAttribute("Overlap")),
+                    Format: doc.getAttribute("Format"),
+                    Width: parseInt(size.getAttribute("Width")),
+                    Height: parseInt(size.getAttribute("Height")),
                     //FillStyle:"#00FF00",
-                    MaxLevel:0
+                    MaxLevel: 0
                 };
-                
+
 //                ouv.w=cfg.Width;
 //                ouv.h=cfg.Height;
                 visualign();
-                if(allmarkers[section_id]){
-                    markers=allmarkers[section_id];
-                }else{
-                    markers=[];
+                if (allmarkers[section_id]) {
+                    markers = allmarkers[section_id];
+                } else {
+                    markers = [];
                 }
-                if(ouv.w!==cfg.Width || ouv.h!==cfg.Height){
-                    for(let marker of markers){
-                        marker.x*=cfg.Width/ouv.w;
-                        marker.y*=cfg.Height/ouv.h;
-                        marker.nx*=cfg.Width/ouv.w;
-                        marker.ny*=cfg.Height/ouv.h;
+                if (ouv.w !== cfg.Width || ouv.h !== cfg.Height) {
+                    for (let marker of markers) {
+                        marker.x *= cfg.Width / ouv.w;
+                        marker.y *= cfg.Height / ouv.h;
+                        marker.nx *= cfg.Width / ouv.w;
+                        marker.ny *= cfg.Height / ouv.h;
                     }
-                    ouv.w=cfg.Width;
-                    ouv.h=cfg.Height;
+                    ouv.w = cfg.Width;
+                    ouv.h = cfg.Height;
 //                    alert("!");
                 }
-                if(allpoi[section_id]){
-                    poi=allpoi[section_id];
-                }else{
-                    poi=[];
+                if (allpoi[section_id]) {
+                    poi = allpoi[section_id];
+                } else {
+                    poi = [];
                 }
                 triangulate();
-                
-                var meta=document.getElementById("metadata");
-                meta.innerHTML=/*ouv.name*/section_id+"<br>"+cfg.Width.toString()+" x "+cfg.Height.toString()+"<br>"
-                        +atlas.name
-                        +(args.prev?"":("<br><a href='http://cmbn-navigator.uio.no/navigator/feeder/original/?id="+section_id+"' target='_blank'>Download image</a>"));
-                meta.style.left=window.innerWidth-meta.scrollWidth-5+"px";
-                
-                var w=cfg.Width;
-                var h=cfg.Height;
-                while(w>1 || h>1){
-                    w=(w+1)>>1;
-                    h=(h+1)>>1;
+
+                var meta = document.getElementById("metadata");
+                meta.innerHTML = /*ouv.name*/section_id + "<br>" + cfg.Width.toString() + " x " + cfg.Height.toString() + "<br>"
+                        + atlas.name
+                        + (args.prev ? "" : ("<br><a href='http://cmbn-navigator.uio.no/navigator/feeder/original/?id=" + section_id + "' target='_blank'>Download image</a>"));
+                meta.style.left = window.innerWidth - meta.scrollWidth - 5 + "px";
+
+                var w = cfg.Width;
+                var h = cfg.Height;
+                while (w > 1 || h > 1) {
+                    w = (w + 1) >> 1;
+                    h = (h + 1) >> 1;
                     cfg.MaxLevel++;
                 }
 
@@ -444,7 +502,7 @@
 //                    return locators.TileLocator(section_id,this.MaxLevel-level,x,y,cfg.Format);
 //                };
                 cfg.Load = async function (level, x, y) {
-                    const img = await loaders.TileLoader(section_id, cfg.MaxLevel-level, x, y, cfg.Format);
+                    const img = await loaders.TileLoader(section_id, cfg.MaxLevel - level, x, y, cfg.Format);
                     const canvas = document.createElement("canvas");
                     canvas.width = cfg.TileSize;
                     canvas.height = cfg.TileSize;
@@ -466,7 +524,7 @@
 //                    };
 //                    img.src=key;
 //                };
-                cfg.Overlay=function(ctx,cw,ch,x,y,w,h){
+                cfg.Overlay = function (ctx, cw, ch, x, y, w, h) {
 //                    var bright=parseInt(document.getElementById("bright").value);
 //                    if(bright>1){
 //                      var bdata=ctx.getImageData(0,0,cw,ch);
@@ -475,138 +533,144 @@
 //                        bdat[i]*=bright;
 //                      ctx.putImageData(bdata,0,0);
 //                    }
-                    var ovltrgx=0;
-                    var ovltrgy=0;
-                    var ovltrgw=cw;
-                    var ovltrgh=ch;
-                    var ovlcutx=overlay.width*x/cfg.Width;
-                    var ovlcuty=overlay.height*y/cfg.Height;
-                    var ovlcutw=overlay.width*w/cfg.Width;
-                    var ovlcuth=overlay.height*h/cfg.Height;
-                    if(ovlcutx<0){
-                        ovltrgx=-x*cw/w;
-                        ovlcutx=0;
+                    var ovltrgx = 0;
+                    var ovltrgy = 0;
+                    var ovltrgw = cw;
+                    var ovltrgh = ch;
+                    var ovlcutx = overlay.width * x / cfg.Width;
+                    var ovlcuty = overlay.height * y / cfg.Height;
+                    var ovlcutw = overlay.width * w / cfg.Width;
+                    var ovlcuth = overlay.height * h / cfg.Height;
+                    if (ovlcutx < 0) {
+                        ovltrgx = -x * cw / w;
+                        ovlcutx = 0;
                     }
-                    if(ovlcuty<0){
-                        ovltrgy=-y*ch/h;
-                        ovlcuty=0;
+                    if (ovlcuty < 0) {
+                        ovltrgy = -y * ch / h;
+                        ovlcuty = 0;
                     }
-                    if(ovlcutw>overlay.width){
-                        ovltrgw-=(w-cfg.Width)*cw/w;
-                        ovlcutw=overlay.width;
+                    if (ovlcutw > overlay.width) {
+                        ovltrgw -= (w - cfg.Width) * cw / w;
+                        ovlcutw = overlay.width;
                     }
-                    if(ovlcuth>overlay.height){
-                        ovltrgh-=(h-cfg.Height)*ch/h;
-                        ovlcuth=overlay.height;
+                    if (ovlcuth > overlay.height) {
+                        ovltrgh -= (h - cfg.Height) * ch / h;
+                        ovlcuth = overlay.height;
                     }
-                    var alpha=parseInt(document.getElementById("alpha").value);
-                    ctx.globalAlpha=alpha/100;
-                    ctx.drawImage(overlay,ovlcutx,ovlcuty,ovlcutw,ovlcuth,ovltrgx,ovltrgy,ovltrgw,ovltrgh);
-                    ctx.globalAlpha=1;
+                    var alpha = parseInt(document.getElementById("alpha").value);
+                    ctx.globalAlpha = alpha / 100;
+                    ctx.drawImage(overlay, ovlcutx, ovlcuty, ovlcutw, ovlcuth, ovltrgx, ovltrgy, ovltrgw, ovltrgh);
+                    ctx.globalAlpha = 1;
 
-                    if(show_triangles.checked){
-                        ctx.strokeStyle="#000000";
-                        ctx.lineWidth=2.5;
+                    if (show_triangles.checked) {
+                        ctx.strokeStyle = "#000000";
+                        ctx.lineWidth = 2.5;
                         ctx.beginPath();
-                        triangles.forEach(function(triangle){
-                            var v=vertices[triangle[2]];
+                        triangles.forEach(function (triangle) {
+                            var v = vertices[triangle[2]];
                             ctx.moveTo(
-                                    Math.round((v[0]-x)*cw/w)+0.5,
-                                    Math.round((v[1]-y)*ch/h)+0.5
-                            );
-                            for(var i=0;i<3;i++){
-                                var v=vertices[triangle[i]];
+                                    Math.round((v[0] - x) * cw / w) + 0.5,
+                                    Math.round((v[1] - y) * ch / h) + 0.5
+                                    );
+                            for (var i = 0; i < 3; i++) {
+                                var v = vertices[triangle[i]];
                                 ctx.lineTo(
-                                        Math.round((v[0]-x)*cw/w)+0.5,
-                                        Math.round((v[1]-y)*ch/h)+0.5
-                                );
+                                        Math.round((v[0] - x) * cw / w) + 0.5,
+                                        Math.round((v[1] - y) * ch / h) + 0.5
+                                        );
                             }
                         });
                         ctx.stroke();
                     }
-                    if(!args.view){
-                        if(args.nl){
-                            ctx.strokeStyle="#FFFF80";
-                            try {ctx.strokeStyle=document.getElementById("nlcolor").value;} catch (ex) {}
-                            ctx.lineWidth=2.5;
+                    if (!args.view) {
+                        if (args.nl) {
+                            ctx.strokeStyle = "#FFFF80";
+                            try {
+                                ctx.strokeStyle = document.getElementById("nlcolor").value;
+                            } catch (ex) {
+                            }
+                            ctx.lineWidth = 2.5;
                             ctx.beginPath();
-                            for(var i=0;i<markers.length;i++){
-                                ctx.moveTo(Math.round((markers[i].x-x)*cw/w)+0.5,
-                                           Math.round((markers[i].y-y)*ch/h)+0.5);
-                                var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
-                                var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
-                                ctx.lineTo(sx,sy);
-                                ctx.moveTo(sx,sy-10);
-                                ctx.lineTo(sx,sy+10);
-                                ctx.moveTo(sx-10,sy);
-                                ctx.lineTo(sx+10,sy);
+                            for (var i = 0; i < markers.length; i++) {
+                                ctx.moveTo(Math.round((markers[i].x - x) * cw / w) + 0.5,
+                                        Math.round((markers[i].y - y) * ch / h) + 0.5);
+                                var sx = Math.round((markers[i].nx - x) * cw / w) + 0.5;
+                                var sy = Math.round((markers[i].ny - y) * ch / h) + 0.5;
+                                ctx.lineTo(sx, sy);
+                                ctx.moveTo(sx, sy - 10);
+                                ctx.lineTo(sx, sy + 10);
+                                ctx.moveTo(sx - 10, sy);
+                                ctx.lineTo(sx + 10, sy);
                             }
                             ctx.stroke();
-                        }else{
-                            ctx.strokeStyle="#FFFF80";
-                            try {ctx.strokeStyle=document.getElementById("ancolor").value;} catch (ex) {}
-                            ctx.lineWidth=2.5;
+                        } else {
+                            ctx.strokeStyle = "#FFFF80";
+                            try {
+                                ctx.strokeStyle = document.getElementById("ancolor").value;
+                            } catch (ex) {
+                            }
+                            ctx.lineWidth = 2.5;
                             ctx.beginPath();
-                            for(var i=0;i<poi.length;i++){
-                                var sx=Math.round((poi[i].x-x)*cw/w)+0.5;
-                                var sy=Math.round((poi[i].y-y)*ch/h)+0.5;
-                                ctx.moveTo(sx,sy-10);
-                                ctx.lineTo(sx,sy+10);
-                                ctx.moveTo(sx-10,sy);
-                                ctx.lineTo(sx+10,sy);
+                            for (var i = 0; i < poi.length; i++) {
+                                var sx = Math.round((poi[i].x - x) * cw / w) + 0.5;
+                                var sy = Math.round((poi[i].y - y) * ch / h) + 0.5;
+                                ctx.moveTo(sx, sy - 10);
+                                ctx.lineTo(sx, sy + 10);
+                                ctx.moveTo(sx - 10, sy);
+                                ctx.lineTo(sx + 10, sy);
                             }
                             ctx.stroke();
                         }
                     }
-                    if((pop!==null)&&(alpha!==0)){
-                        ctx.fillStyle="rgb("+pop.r+","+pop.g+","+pop.b+")";
-                        if(popscape)
-                            ctx.fillRect(0,0,cw,60);
+                    if ((pop !== null) && (alpha !== 0)) {
+                        ctx.fillStyle = "rgb(" + pop.r + "," + pop.g + "," + pop.b + ")";
+                        if (popscape)
+                            ctx.fillRect(0, 0, cw, 60);
                         else
-                            ctx.fillRect(0,ch-60,cw,60);
-                        ctx.font="40px sans-serif";
-                        ctx.fillStyle="#000000";
-                        ctx.textAlign="center";
-                        ctx.textBaseline="middle";
-                        if(popscape)
-                            ctx.fillText(pop.name,cw/2,30);
+                            ctx.fillRect(0, ch - 60, cw, 60);
+                        ctx.font = "40px sans-serif";
+                        ctx.fillStyle = "#000000";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        if (popscape)
+                            ctx.fillText(pop.name, cw / 2, 30);
                         else
-                            ctx.fillText(pop.name,cw/2,ch-30);
+                            ctx.fillText(pop.name, cw / 2, ch - 30);
                     }
                 };
-                var cursor={
-                  screenx:0,screeny:0,imagex:0,imagey:0
+                var cursor = {
+                    screenx: 0, screeny: 0, imagex: 0, imagey: 0
                 };
                 var prevalpha;
-                cfg.MouseMove=function(event,cw,ch,x,y,w,h){
-                    cursor.screenx=event.offsetX;
-                    cursor.screeny=event.offsetY;
-                    var mx=cursor.imagex=Math.round(x+event.offsetX*w/cw);
-                    var my=cursor.imagey=Math.round(y+event.offsetY*h/ch);
-                    if(markerpick!==undefined){
-                        if(args.nl){
-                            markers[markerpick].nx=mx;
-                            markers[markerpick].ny=my;
+                cfg.MouseMove = function (event, cw, ch, x, y, w, h) {
+                    cursor.screenx = event.offsetX;
+                    cursor.screeny = event.offsetY;
+                    var mx = cursor.imagex = Math.round(x + event.offsetX * w / cw);
+                    var my = cursor.imagey = Math.round(y + event.offsetY * h / ch);
+                    if (markerpick !== undefined) {
+                        if (args.nl) {
+                            markers[markerpick].nx = mx;
+                            markers[markerpick].ny = my;
                             triangulate();
-                        }else{
-                            poi[markerpick].x=mx;
-                            poi[markerpick].y=my;
+                        } else {
+                            poi[markerpick].x = mx;
+                            poi[markerpick].y = my;
                         }
                         drawImage();
                         return;
                     }
-                    var jump=false;
-                    if(popscape && event.offsetY<ch/3){
-                        popscape=false;
-                        jump=true;
+                    var jump = false;
+                    if (popscape && event.offsetY < ch / 3) {
+                        popscape = false;
+                        jump = true;
                     }
-                    if(!popscape && event.offsetY>ch*2/3){
-                        popscape=true;
-                        jump=true;
+                    if (!popscape && event.offsetY > ch * 2 / 3) {
+                        popscape = true;
+                        jump = true;
                     }
-                    var div=document.getElementById("coords");
-                    var nx=mx/cfg.Width;
-                    var ny=my/cfg.Height;
+                    var div = document.getElementById("coords");
+                    var nx = mx / cfg.Width;
+                    var ny = my / cfg.Height;
                     //!! todo: nonlin
 //                    debugger;
                     if (!args.linear)
@@ -627,49 +691,51 @@
                                 }
                             }
 
-                    var fx=ouv.ox+ouv.ux*nx+ouv.vx*ny;
-                    var fy=ouv.oy+ouv.uy*nx+ouv.vy*ny;
-                    var fz=ouv.oz+ouv.uz*nx+ouv.vz*ny;
-                    var trf=atlas.transformations[document.getElementById("traf").selectedIndex];
-                    var xyz1=mult([[fx,fy,fz,1]],trf.matrix)[0];
-                    div.innerText="(x="+xyz1[0].toPrecision(5)+" y="+xyz1[1].toPrecision(5)+" z="+xyz1[2].toPrecision(5)+")";
-                    var lx=Math.round(mx/cfg.Width*overlaywidth);
-                    var ly=Math.round(my/cfg.Height*overlayheight);
-                    var oldpop=pop;
-                    pop=null;
-                    if((lx>=0)&&(lx<overlaywidth)&&(ly>=0)&&(ly<overlayheight)){
-                        pop=overlaydata[lx+ly*overlaywidth];
-                        pop=pop===0?null:atlas.labels[pop];
+                    var fx = ouv.ox + ouv.ux * nx + ouv.vx * ny;
+                    var fy = ouv.oy + ouv.uy * nx + ouv.vy * ny;
+                    var fz = ouv.oz + ouv.uz * nx + ouv.vz * ny;
+                    var trf = atlas.transformations[document.getElementById("traf").selectedIndex];
+                    var xyz1 = mult([[fx, fy, fz, 1]], trf.matrix)[0];
+                    div.innerText = "(x=" + xyz1[0].toPrecision(5) + " y=" + xyz1[1].toPrecision(5) + " z=" + xyz1[2].toPrecision(5) + ")";
+                    var lx = Math.round(mx / cfg.Width * overlaywidth);
+                    var ly = Math.round(my / cfg.Height * overlayheight);
+                    var oldpop = pop;
+                    pop = null;
+                    if ((lx >= 0) && (lx < overlaywidth) && (ly >= 0) && (ly < overlayheight)) {
+                        pop = overlaydata[lx + ly * overlaywidth];
+                        pop = pop === 0 ? null : atlas.labels[pop];
                     }
-                    if(oldpop!==pop || jump)drawImage();
+                    if (oldpop !== pop || jump)
+                        drawImage();
                 };
                 var markerpick;
-                cfg.MouseDown=function(event,cw,ch,x,y,w,h){
-                    if(args.view)return false;
-                    markerpick=undefined;
-                    if(args.nl){
-                        for(var i=0;i<markers.length;i++){
-                            var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
-                            var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
-                            if(event.offsetX>sx-10 && event.offsetX<sx+10 && event.offsetY>sy-10 && event.offsetY<sy+10)
-                                markerpick=i;
+                cfg.MouseDown = function (event, cw, ch, x, y, w, h) {
+                    if (args.view)
+                        return false;
+                    markerpick = undefined;
+                    if (args.nl) {
+                        for (var i = 0; i < markers.length; i++) {
+                            var sx = Math.round((markers[i].nx - x) * cw / w) + 0.5;
+                            var sy = Math.round((markers[i].ny - y) * ch / h) + 0.5;
+                            if (event.offsetX > sx - 10 && event.offsetX < sx + 10 && event.offsetY > sy - 10 && event.offsetY < sy + 10)
+                                markerpick = i;
                         }
-                    }else{
-                        for(var i=0;i<poi.length;i++){
-                            var sx=Math.round((poi[i].x-x)*cw/w)+0.5;
-                            var sy=Math.round((poi[i].y-y)*ch/h)+0.5;
-                            if(event.offsetX>sx-10 && event.offsetX<sx+10 && event.offsetY>sy-10 && event.offsetY<sy+10)
-                                markerpick=i;
+                    } else {
+                        for (var i = 0; i < poi.length; i++) {
+                            var sx = Math.round((poi[i].x - x) * cw / w) + 0.5;
+                            var sy = Math.round((poi[i].y - y) * ch / h) + 0.5;
+                            if (event.offsetX > sx - 10 && event.offsetX < sx + 10 && event.offsetY > sy - 10 && event.offsetY < sy + 10)
+                                markerpick = i;
                         }
                     }
-                    return markerpick!==undefined;
+                    return markerpick !== undefined;
                 };
-                cfg.MouseUp=function(event,cw,ch,x,y,w,h){
-                    markerpick=undefined;
+                cfg.MouseUp = function (event, cw, ch, x, y, w, h) {
+                    markerpick = undefined;
                 };
-                cfg.KeyDown=function(event,cw,ch,x,y,w,h){
-                    var alpha=document.getElementById("alpha");
-                    switch(event.key){
+                cfg.KeyDown = function (event, cw, ch, x, y, w, h) {
+                    var alpha = document.getElementById("alpha");
+                    switch (event.key) {
                         case "ArrowLeft":
                             filmstrip.prev();
                             break;
@@ -677,262 +743,266 @@
                             filmstrip.next();
                             break;
                         case "ArrowUp":
-                            if(prevalpha){
-                                alpha.value=prevalpha;
+                            if (prevalpha) {
+                                alpha.value = prevalpha;
                                 drawImage();
                             }
                             break;
                         case "ArrowDown":
-                            if(alpha.value!=="0"){
-                                prevalpha=alpha.value;
-                                alpha.value=0;
+                            if (alpha.value !== "0") {
+                                prevalpha = alpha.value;
+                                alpha.value = 0;
                                 drawImage();
                             }
                             break;
                         case "Delete":
-                            if(!args.view){
-                                if(args.nl){
-                                    var idx=undefined;
-                                    for(var i=0;i<markers.length;i++){
-                                        var sx=Math.round((markers[i].x-x)*cw/w)+0.5;
-                                        var sy=Math.round((markers[i].y-y)*ch/h)+0.5;
-                                        if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
-                                            idx=i;
-                                        var sx=Math.round((markers[i].nx-x)*cw/w)+0.5;
-                                        var sy=Math.round((markers[i].ny-y)*ch/h)+0.5;
-                                        if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
-                                            idx=i;
+                            if (!args.view) {
+                                if (args.nl) {
+                                    var idx = undefined;
+                                    for (var i = 0; i < markers.length; i++) {
+                                        var sx = Math.round((markers[i].x - x) * cw / w) + 0.5;
+                                        var sy = Math.round((markers[i].y - y) * ch / h) + 0.5;
+                                        if (cursor.screenx > sx - 8 && cursor.screenx < sx + 8 && cursor.screeny > sy - 8 && cursor.screeny < sy + 8)
+                                            idx = i;
+                                        var sx = Math.round((markers[i].nx - x) * cw / w) + 0.5;
+                                        var sy = Math.round((markers[i].ny - y) * ch / h) + 0.5;
+                                        if (cursor.screenx > sx - 8 && cursor.screenx < sx + 8 && cursor.screeny > sy - 8 && cursor.screeny < sy + 8)
+                                            idx = i;
                                     }
-                                    if(idx!==undefined){
-                                        markers.splice(idx,1);
+                                    if (idx !== undefined) {
+                                        markers.splice(idx, 1);
                                         triangulate();
                                         drawImage();
                                     }
-                                }else{
-                                    var idx=undefined;
-                                    for(var i=0;i<poi.length;i++){
-                                        var sx=Math.round((poi[i].x-x)*cw/w)+0.5;
-                                        var sy=Math.round((poi[i].y-y)*ch/h)+0.5;
-                                        if(cursor.screenx>sx-8 && cursor.screenx<sx+8 && cursor.screeny>sy-8 && cursor.screeny<sy+8)
-                                            idx=i;
+                                } else {
+                                    var idx = undefined;
+                                    for (var i = 0; i < poi.length; i++) {
+                                        var sx = Math.round((poi[i].x - x) * cw / w) + 0.5;
+                                        var sy = Math.round((poi[i].y - y) * ch / h) + 0.5;
+                                        if (cursor.screenx > sx - 8 && cursor.screenx < sx + 8 && cursor.screeny > sy - 8 && cursor.screeny < sy + 8)
+                                            idx = i;
                                     }
-                                    if(idx!==undefined){
-                                        poi.splice(idx,1);
+                                    if (idx !== undefined) {
+                                        poi.splice(idx, 1);
                                         drawImage();
                                     }
                                 }
                             }
                             break;
                         default:
-                            if(!args.view && cursor.imagex>=0 && cursor.imagey>=0 && cursor.imagex<=cfg.Width && cursor.imagey<=cfg.Height){
-                                if(args.nl){
-                                    var D=[cursor.imagex,cursor.imagey];
-                                    for(var triangle of triangles){
-                                        var ai=triangle[0];
-                                        var bi=triangle[1];
-                                        var ci=triangle[2];
-                                        var A=vertices[ai];
-                                        var B=vertices[bi];
-                                        var C=vertices[ci];
-                                        var uv1=intri(A,B,C,D);
-                                        if(uv1){
-    //                                        console.log(uv1);
-                                            if(ai>=4)
-                                                A=markers[ai-4];
+                            if (!args.view && cursor.imagex >= 0 && cursor.imagey >= 0 && cursor.imagex <= cfg.Width && cursor.imagey <= cfg.Height) {
+                                if (args.nl) {
+                                    var D = [cursor.imagex, cursor.imagey];
+                                    for (var triangle of triangles) {
+                                        var ai = triangle[0];
+                                        var bi = triangle[1];
+                                        var ci = triangle[2];
+                                        var A = vertices[ai];
+                                        var B = vertices[bi];
+                                        var C = vertices[ci];
+                                        var uv1 = intri(A, B, C, D);
+                                        if (uv1) {
+                                            //                                        console.log(uv1);
+                                            if (ai >= 4)
+                                                A = markers[ai - 4];
                                             else
-                                                A={x:vertices[ai][0],y:vertices[ai][1]};
-                                            if(bi>=4)
-                                                B=markers[bi-4];
+                                                A = {x: vertices[ai][0], y: vertices[ai][1]};
+                                            if (bi >= 4)
+                                                B = markers[bi - 4];
                                             else
-                                                B={x:vertices[bi][0],y:vertices[bi][1]};
-                                            if(ci>=4)
-                                                C=markers[triangle[2]-4];
+                                                B = {x: vertices[bi][0], y: vertices[bi][1]};
+                                            if (ci >= 4)
+                                                C = markers[triangle[2] - 4];
                                             else
-                                                C={x:vertices[ci][0],y:vertices[ci][1]};
+                                                C = {x: vertices[ci][0], y: vertices[ci][1]};
                                             markers.push({
-                                                x:A.x+(B.x-A.x)*uv1[0]+(C.x-A.x)*uv1[1],
-                                                y:A.y+(B.y-A.y)*uv1[0]+(C.y-A.y)*uv1[1],
-                                                nx:cursor.imagex,
-                                                ny:cursor.imagey
+                                                x: A.x + (B.x - A.x) * uv1[0] + (C.x - A.x) * uv1[1],
+                                                y: A.y + (B.y - A.y) * uv1[0] + (C.y - A.y) * uv1[1],
+                                                nx: cursor.imagex,
+                                                ny: cursor.imagey
                                             });
-    //                                        console.log(markers[markers.length-1]);
-                                            D=false;
+                                            //                                        console.log(markers[markers.length-1]);
+                                            D = false;
                                             break;
                                         }
                                     }
-                                    if(D){
-    //                                    console.log("!");
-                                        markers.push({x:cursor.imagex,y:cursor.imagey,nx:cursor.imagex,ny:cursor.imagey});
+                                    if (D) {
+                                        //                                    console.log("!");
+                                        markers.push({x: cursor.imagex, y: cursor.imagey, nx: cursor.imagex, ny: cursor.imagey});
                                     }
                                     triangulate();
                                     drawImage();
-                                }else{
-                                    poi.push({x:cursor.imagex,y:cursor.imagey});
+                                } else {
+                                    poi.push({x: cursor.imagex, y: cursor.imagey});
                                     drawImage();
                                 }
                             }
                     }
                 };
-                if(zoomer)zoomer.destroy();
-                zoomer=new Zoomer(document.getElementById("zoomcanvas"),cfg);
+                if (zoomer)
+                    zoomer.destroy();
+                zoomer = new Zoomer(document.getElementById("zoomcanvas"), cfg);
                 zoomer.home();
             }
-            function drawImage(){if(zoomer)zoomer.redraw();}
-            function excel(){
-                allpoi[section_id] = poi;
-    const sheets = [];
-//    for (const section of sections)
-    for (const section of filmstrip.getmeta()) {
-        const pois = allpoi[section.id] || [];
-//        if (section.poi.length) {
-        if (pois.length) {
-            //nonlin
-            const vertices = [
-                [-section.w / 10, -section.h / 10, -section.w / 10, -section.h / 10],
-                [section.w * 1.1, -section.h / 10, section.w * 1.1, -section.h / 10],
-                [-section.w / 10, section.h * 1.1, -section.w / 10, section.h * 1.1],
-                [section.w * 1.1, section.h * 1.1, section.w * 1.1, section.h * 1.1]];
-            const triangles = [[0, 1, 2], [1, 2, 3]];
-            // i<j j*(j-1)/2+i
-            const ix = (i, j) => j * (j - 1) / 2 + i;
-            const edges = [2, 2, 2, 0, 2, 2];
-
-            if (!args.linear)
-                for (const marker of allmarkers[section.id]) {
-                    const D = [marker.nx, marker.ny];
-                    let found = false;
-                    const remove = [];
-                    for (let i = 0; i < triangles.length; i++) {
-                        const triangle = triangles[i];
-                        const A = vertices[triangle[0]];
-                        const B = vertices[triangle[1]];
-                        const C = vertices[triangle[2]];
-                        if (!found && intri(A, B, C, D))
-                            found = true;
-                        if (incirc(A, B, C, D))
-                            remove.unshift(i);
-                    }
-                    if (found) {
-                        for (const i of remove) {
-                            const triangle = triangles.splice(i, 1)[0];
-                            const A = triangle[0];
-                            const B = triangle[1];
-                            const C = triangle[2];
-                            edges[ix(A, B)]--;
-                            edges[ix(A, C)]--;
-                            edges[ix(B, C)]--;
-                        }
-                        const es = [];
-                        for (let j = 1; j < vertices.length; j++)
-                            for (let i = 0; i < j; i++)
-                                if (edges[ix(i, j)] === 1) {
-                                    triangles.push([i, j, vertices.length]);
-                                    es.push([i, j], [i, vertices.length], [j, vertices.length]);
-                                }
-                        for (var e of es)
-                            edges[ix(e[0], e[1])] = 2; //..
-                        vertices.push([marker.nx, marker.ny, marker.x, marker.y]);
-                    }
-                }
-
-            for (const triangle of triangles) {
-                const A = vertices[triangle[0]];
-                const B = vertices[triangle[1]];
-                const C = vertices[triangle[2]];
-                triangle.push(
-                        Math.min(A[0], B[0], C[0]), //3
-                        Math.max(A[0], B[0], C[0]), //4
-                        Math.min(A[1], B[1], C[1]), //5
-                        Math.max(A[1], B[1], C[1]), //6
-                        inv3x3([//7
-                            [B[0] - A[0], B[1] - A[1], 0],
-                            [C[0] - A[0], C[1] - A[1], 0],
-                            [A[0], A[1], 1]
-                        ]));
+            function drawImage() {
+                if (zoomer)
+                    zoomer.redraw();
             }
-            //nonlin
-            
-            const rows = [];
+            function excel() {
+                allpoi[section_id] = poi;
+                const sheets = [];
+//    for (const section of sections)
+                for (const section of filmstrip.getmeta()) {
+                    const pois = allpoi[section.id] || [];
+//        if (section.poi.length) {
+                    if (pois.length) {
+                        //nonlin
+                        const vertices = [
+                            [-section.w / 10, -section.h / 10, -section.w / 10, -section.h / 10],
+                            [section.w * 1.1, -section.h / 10, section.w * 1.1, -section.h / 10],
+                            [-section.w / 10, section.h * 1.1, -section.w / 10, section.h * 1.1],
+                            [section.w * 1.1, section.h * 1.1, section.w * 1.1, section.h * 1.1]];
+                        const triangles = [[0, 1, 2], [1, 2, 3]];
+                        // i<j j*(j-1)/2+i
+                        const ix = (i, j) => j * (j - 1) / 2 + i;
+                        const edges = [2, 2, 2, 0, 2, 2];
+
+                        if (!args.linear)
+                            for (const marker of allmarkers[section.id]) {
+                                const D = [marker.nx, marker.ny];
+                                let found = false;
+                                const remove = [];
+                                for (let i = 0; i < triangles.length; i++) {
+                                    const triangle = triangles[i];
+                                    const A = vertices[triangle[0]];
+                                    const B = vertices[triangle[1]];
+                                    const C = vertices[triangle[2]];
+                                    if (!found && intri(A, B, C, D))
+                                        found = true;
+                                    if (incirc(A, B, C, D))
+                                        remove.unshift(i);
+                                }
+                                if (found) {
+                                    for (const i of remove) {
+                                        const triangle = triangles.splice(i, 1)[0];
+                                        const A = triangle[0];
+                                        const B = triangle[1];
+                                        const C = triangle[2];
+                                        edges[ix(A, B)]--;
+                                        edges[ix(A, C)]--;
+                                        edges[ix(B, C)]--;
+                                    }
+                                    const es = [];
+                                    for (let j = 1; j < vertices.length; j++)
+                                        for (let i = 0; i < j; i++)
+                                            if (edges[ix(i, j)] === 1) {
+                                                triangles.push([i, j, vertices.length]);
+                                                es.push([i, j], [i, vertices.length], [j, vertices.length]);
+                                            }
+                                    for (var e of es)
+                                        edges[ix(e[0], e[1])] = 2; //..
+                                    vertices.push([marker.nx, marker.ny, marker.x, marker.y]);
+                                }
+                            }
+
+                        for (const triangle of triangles) {
+                            const A = vertices[triangle[0]];
+                            const B = vertices[triangle[1]];
+                            const C = vertices[triangle[2]];
+                            triangle.push(
+                                    Math.min(A[0], B[0], C[0]), //3
+                                    Math.max(A[0], B[0], C[0]), //4
+                                    Math.min(A[1], B[1], C[1]), //5
+                                    Math.max(A[1], B[1], C[1]), //6
+                                    inv3x3([//7
+                                        [B[0] - A[0], B[1] - A[1], 0],
+                                        [C[0] - A[0], C[1] - A[1], 0],
+                                        [A[0], A[1], 1]
+                                    ]));
+                        }
+                        //nonlin
+
+                        const rows = [];
 //            const ouv = section.ouv;
-            rows.push(["ID", section.id, , , "HIDE", "HIDE"]);
-            rows.push(["Resolution", section.w, section.h]);
-            rows.push([]);
-            rows.push(["Anchor", "x", "y", "z"]);
-            rows.push(["o", section.ox, section.oy, section.oz]);
-            rows.push(["u", section.ux, section.uy, section.uz]);
-            rows.push(["v", section.vx, section.vy, section.vz]);
-            rows.push([]);
-            if (atlas.transformations.length === 1) {
-                // TODO nonlin
-                rows.push(["Marker#", "x", "y", , "nx", "ny", "linfx", "linfy", "linfz"]);
-                for (const poi of pois) {
-                    const line = rows.length + 1;
-                    rows.push([
-                        rows.length - 8, poi.x, poi.y, , `=B${line}/B2`, `=C${line}/C2`,
-                        `=B5+B6*E${line}+B7*F${line}`,
-                        `=C5+C6*E${line}+C7*F${line}`,
-                        `=D5+D6*E${line}+D7*F${line}`
-                    ]);
-                }
-            } else {
-                for (let i = 0; i < 4; i++) {
-                    const row = ["HIDE", , , , , , , , , ];
-                    for (const trf of atlas.transformations.slice(1))
-                        row.push(trf.matrix[i][0], trf.matrix[i][1], trf.matrix[i][2]);
-                    rows.push(row);
-                }
-                const namerow = [, , , , , ,"File coordinates" , ];
-                const hdrrow = ["Marker#", "x", "y", , "nx", "ny", "fx", "fy", "fz"];
-                for (const trf of atlas.transformations.slice(1)) {
-                    namerow.push(undefined, undefined, trf.name);
-                    hdrrow.push("tx", "ty", "tz");
-                }
-                rows.push(namerow, hdrrow);
-                for (const poi of pois) {
-                    let x=poi.x;
-                    let y=poi.y;
-                    
-                    for (const triangle of triangles)
-                        if (x >= triangle[3] && x <= triangle[4] && y >= triangle[5] && y <= triangle[6]) {
-                            const uv1 = mult([[x, y, 1]], triangle[7])[0];
-                            if (uv1[0] >= 0 && uv1[0] < 1 && uv1[1] >= 0 && uv1[1] < 1 && uv1[0] + uv1[1] <= 1) {
-                                const A = vertices[triangle[0]];
-                                const B = vertices[triangle[1]];
-                                const C = vertices[triangle[2]];
-                                x = A[2] + (B[2] - A[2]) * uv1[0] + (C[2] - A[2]) * uv1[1];
-                                y = A[3] + (B[3] - A[3]) * uv1[0] + (C[3] - A[3]) * uv1[1];
-                                break;
+                        rows.push(["ID", section.id, , , "HIDE", "HIDE"]);
+                        rows.push(["Resolution", section.w, section.h]);
+                        rows.push([]);
+                        rows.push(["Anchor", "x", "y", "z"]);
+                        rows.push(["o", section.ox, section.oy, section.oz]);
+                        rows.push(["u", section.ux, section.uy, section.uz]);
+                        rows.push(["v", section.vx, section.vy, section.vz]);
+                        rows.push([]);
+                        if (atlas.transformations.length === 1) {
+                            // TODO nonlin
+                            rows.push(["Marker#", "x", "y", , "nx", "ny", "linfx", "linfy", "linfz"]);
+                            for (const poi of pois) {
+                                const line = rows.length + 1;
+                                rows.push([
+                                    rows.length - 8, poi.x, poi.y, , `=B${line}/B2`, `=C${line}/C2`,
+                                    `=B5+B6*E${line}+B7*F${line}`,
+                                    `=C5+C6*E${line}+C7*F${line}`,
+                                    `=D5+D6*E${line}+D7*F${line}`
+                                ]);
+                            }
+                        } else {
+                            for (let i = 0; i < 4; i++) {
+                                const row = ["HIDE", , , , , , , , , ];
+                                for (const trf of atlas.transformations.slice(1))
+                                    row.push(trf.matrix[i][0], trf.matrix[i][1], trf.matrix[i][2]);
+                                rows.push(row);
+                            }
+                            const namerow = [, , , , , , "File coordinates", ];
+                            const hdrrow = ["Marker#", "x", "y", , "nx", "ny", "fx", "fy", "fz"];
+                            for (const trf of atlas.transformations.slice(1)) {
+                                namerow.push(undefined, undefined, trf.name);
+                                hdrrow.push("tx", "ty", "tz");
+                            }
+                            rows.push(namerow, hdrrow);
+                            for (const poi of pois) {
+                                let x = poi.x;
+                                let y = poi.y;
+
+                                for (const triangle of triangles)
+                                    if (x >= triangle[3] && x <= triangle[4] && y >= triangle[5] && y <= triangle[6]) {
+                                        const uv1 = mult([[x, y, 1]], triangle[7])[0];
+                                        if (uv1[0] >= 0 && uv1[0] < 1 && uv1[1] >= 0 && uv1[1] < 1 && uv1[0] + uv1[1] <= 1) {
+                                            const A = vertices[triangle[0]];
+                                            const B = vertices[triangle[1]];
+                                            const C = vertices[triangle[2]];
+                                            x = A[2] + (B[2] - A[2]) * uv1[0] + (C[2] - A[2]) * uv1[1];
+                                            y = A[3] + (B[3] - A[3]) * uv1[0] + (C[3] - A[3]) * uv1[1];
+                                            break;
+                                        }
+                                    }
+
+                                const line = rows.length + 1;
+                                const row = [rows.length - 13, x, y, , `=B${line}/B2`, `=C${line}/C2`,
+                                    `=B5+B6*E${line}+B7*F${line}`,
+                                    `=C5+C6*E${line}+C7*F${line}`,
+                                    `=D5+D6*E${line}+D7*F${line}`];
+                                for (let trf = 1; trf < atlas.transformations.length; trf++) {
+                                    for (let i = 0; i < 3; i++) {
+                                        const col = row.length;
+                                        const c = col >= 26 ?
+                                                String.fromCharCode(64 + Math.floor(col / 26)) + String.fromCharCode(65 + col % 26)
+                                                : String.fromCharCode(65 + col);
+                                        row.push(`=G${line}*${c}9+H${line}*${c}10+I${line}*${c}11+${c}12`);
+                                    }
+                                }
+                                rows.push(row);
                             }
                         }
-                    
-                    const line = rows.length + 1;
-                    const row = [rows.length - 13, x, y, , `=B${line}/B2`, `=C${line}/C2`,
-                        `=B5+B6*E${line}+B7*F${line}`,
-                        `=C5+C6*E${line}+C7*F${line}`,
-                        `=D5+D6*E${line}+D7*F${line}`];
-                    for (let trf = 1; trf < atlas.transformations.length; trf++) {
-                        for (let i = 0; i < 3; i++) {
-                            const col = row.length;
-                            const c = col >= 26 ?
-                                    String.fromCharCode(64 + Math.floor(col / 26)) + String.fromCharCode(65 + col % 26)
-                                    : String.fromCharCode(65 + col);
-                            row.push(`=G${line}*${c}9+H${line}*${c}10+I${line}*${c}11+${c}12`);
-                        }
+                        sheets.push([section.id, ...rows]);
                     }
-                    rows.push(row);
                 }
-            }
-            sheets.push([section.id, ...rows]);
-        }
-    }
-    const xl = packxlsx(sheets);
-    const url = URL.createObjectURL(xl);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = args.series.substring(args.series.lastIndexOf("/")+1, args.series.lastIndexOf(".")) + ".xlsx";
-    a.click();
-    URL.revokeObjectURL(url);
-                
+                const xl = packxlsx(sheets);
+                const url = URL.createObjectURL(xl);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = args.series.substring(args.series.lastIndexOf("/") + 1, args.series.lastIndexOf(".")) + ".xlsx";
+                a.click();
+                URL.revokeObjectURL(url);
+
 
 //                // todo: nonlin/canonicalize
 //                var wnd=window.open("about:blank","Excel export #"+Date.now());
@@ -1001,8 +1071,8 @@
 //                d.write("</textarea>Code above can be copied into an Excel sheet<br>Swap decimal dots to commas: <button onclick='swapdots()'>. -> ,</button> and revert: <button onclick='swapcommas()'>, -> .</button></body></html>");
 //                d.close();
             }
-            
-            function metaReady(metahack,callback){
+
+            function metaReady(metahack, callback) {
                 loadMarkers(metahack);
                 callback();
 //                var xhr=new XMLHttpRequest();
@@ -1015,47 +1085,58 @@
 //                };
 //                xhr.send();
             }
-            
-            function loadMarkers(data){
-                var meta=filmstrip.getmeta();
-                allmarkers={};
-                var uglymeta={};
+
+            function loadMarkers(data) {
+                var meta = filmstrip.getmeta();
+                allmarkers = {};
+                var uglymeta = {};
 //                data=JSON.parse(data);
-                if(Array.isArray(data)){ // own format
-                    meta.forEach(function(m){uglymeta[m.id]=m;delete m.vam;});
-                    data.forEach(function(section){
-                        var id=section.id;
-                        var meta=uglymeta[id];
-                        meta.w=section.w;
-                        meta.h=section.h;
-                        allmarkers[id]=section.markers;
+                if (Array.isArray(data)) { // own format
+                    meta.forEach(function (m) {
+                        uglymeta[m.id] = m;
+                        delete m.vam;
+                    });
+                    data.forEach(function (section) {
+                        var id = section.id;
+                        var meta = uglymeta[id];
+                        meta.w = section.w;
+                        meta.h = section.h;
+                        allmarkers[id] = section.markers;
                     });
                 } else { // VisuAlign format
-                    var r=/_s(\d+)/;
-                    meta.forEach(function(m){uglymeta[m.s/*allnumbered?m.s:m.name*/]=m;});
-                    data.slices.forEach(function(section){
-                        var name=section.filename;
-                        if(name){
+                    var r = /_s(\d+)/;
+                    meta.forEach(function (m) {
+                        uglymeta[m.s/*allnumbered?m.s:m.name*/] = m;
+                    });
+                    data.slices.forEach(function (section) {
+                        var name = section.filename;
+                        if (name) {
 //                        name=name.substring(0,name.lastIndexOf("."));
-                        //var meta=uglymeta[name];
-                        var meta=uglymeta[section.hasOwnProperty("nr")?section.nr:/*allnumbered?*/parseInt(r.exec(name)[1])/*:name.substring(0,name.lastIndexOf("."))*/];
-if(!meta){
-  var frag=name.substring(0,name.lastIndexOf("."));
-  filmstrip.getmeta().forEach(function(m){
-    if(m.name.indexOf(frag)>=0)
-      meta=m;
-  });
-}
-                        //var meta=uglymeta[allnumbered?parseInt(section.nr):name.substring(0,name.lastIndexOf("."))];
-                        if(section.markers && meta){
-                            meta.vaw=section.width;
-                            meta.vah=section.height;
-                            meta.vam=section.markers;
-                            var ouv=section.anchoring;
-                            meta.ox=ouv[0];meta.oy=ouv[1];meta.oz=ouv[2];
-                            meta.ux=ouv[3];meta.uy=ouv[4];meta.uz=ouv[5];
-                            meta.vx=ouv[6];meta.vy=ouv[7];meta.vz=ouv[8];
-                        }
+                            //var meta=uglymeta[name];
+                            var meta = uglymeta[section.hasOwnProperty("nr") ? section.nr : /*allnumbered?*/parseInt(r.exec(name)[1])/*:name.substring(0,name.lastIndexOf("."))*/];
+                            if (!meta) {
+                                var frag = name.substring(0, name.lastIndexOf("."));
+                                filmstrip.getmeta().forEach(function (m) {
+                                    if (m.name.indexOf(frag) >= 0)
+                                        meta = m;
+                                });
+                            }
+                            //var meta=uglymeta[allnumbered?parseInt(section.nr):name.substring(0,name.lastIndexOf("."))];
+                            if (section.markers && meta) {
+                                meta.vaw = section.width;
+                                meta.vah = section.height;
+                                meta.vam = section.markers;
+                                var ouv = section.anchoring;
+                                meta.ox = ouv[0];
+                                meta.oy = ouv[1];
+                                meta.oz = ouv[2];
+                                meta.ux = ouv[3];
+                                meta.uy = ouv[4];
+                                meta.uz = ouv[5];
+                                meta.vx = ouv[6];
+                                meta.vy = ouv[7];
+                                meta.vz = ouv[8];
+                            }
 //                            allmarkers[meta.id]=section.markers.map(function(marker){
 //                                return {x:marker[0],y:marker[1],nx:marker[2],ny:marker[3]};
 //                            });
@@ -1064,71 +1145,73 @@ if(!meta){
                     visualign();
                 }
             }
-            
-            function visualign(){
-                var hide=false;
-                filmstrip.getmeta().forEach(function(meta){
-                    if(meta.vam){
-                        if(!meta.w)
-                            hide=true;
-                        else{
-                            allmarkers[meta.id]=meta.vam.map(function(marker){
+
+            function visualign() {
+                var hide = false;
+                filmstrip.getmeta().forEach(function (meta) {
+                    if (meta.vam) {
+                        if (!meta.w)
+                            hide = true;
+                        else {
+                            allmarkers[meta.id] = meta.vam.map(function (marker) {
                                 return {
-                                    x:marker[0],//*meta.w/meta.vaw,
-                                    y:marker[1],//*meta.h/meta.vah,
-                                    nx:marker[2],//*meta.w/meta.vaw,
-                                    ny:marker[3]/**meta.h/meta.vah*/};
+                                    x: marker[0], //*meta.w/meta.vaw,
+                                    y: marker[1], //*meta.h/meta.vah,
+                                    nx: marker[2], //*meta.w/meta.vaw,
+                                    ny: marker[3]/**meta.h/meta.vah*/};
                             });
                             delete meta.vam;
                         }
                     }
                 });
-                document.getElementById("btn_save").disabled=hide;
+                document.getElementById("btn_save").disabled = hide;
             }
-            
-            function load(){
-                var data=prompt("LocaliZoom nonlinear JSON","");
-                if(data===null || data==="")return;
+
+            function load() {
+                var data = prompt("LocaliZoom nonlinear JSON", "");
+                if (data === null || data === "")
+                    return;
                 loadMarkers(JSON.parse(data));
-                markers=allmarkers[section_id] || [];
+                markers = allmarkers[section_id] || [];
                 triangulate();
                 drawImage();
             }
-            function save(){
-                if(section_id)allmarkers[section_id]=markers;
-                var meta=filmstrip.getmeta();
-                var data=[];
-                meta.forEach(function(section){
-                    var smarkers=allmarkers[section.id];
-                    if(smarkers && smarkers.length){
-                        data.push({id:section.id,w:section.w,h:section.h,markers:smarkers});
+            function save() {
+                if (section_id)
+                    allmarkers[section_id] = markers;
+                var meta = filmstrip.getmeta();
+                var data = [];
+                meta.forEach(function (section) {
+                    var smarkers = allmarkers[section.id];
+                    if (smarkers && smarkers.length) {
+                        data.push({id: section.id, w: section.w, h: section.h, markers: smarkers});
                     }
                 });
-                var win=window.open("about:blank","LZSave #"+Date.now());
-                var d=win.document.open();
+                var win = window.open("about:blank", "LZSave #" + Date.now());
+                var d = win.document.open();
                 d.write(JSON.stringify(data));
                 d.close();
             }
-            
-            function toggleHelp(){
-                var helpstyle=document.getElementById("help").style;
-                helpstyle.display=helpstyle.display==="block"?"none":"block";
+
+            function toggleHelp() {
+                var helpstyle = document.getElementById("help").style;
+                helpstyle.display = helpstyle.display === "block" ? "none" : "block";
             }
 //            function toggleTools(){
 //                var toolstyle=document.getElementById("toolsinner").style;
 //                toolstyle.display=toolstyle.display==="inline-block"?"none":"inline-block";
 //            }
-            function toggleAN(){
-                var toolstyle=document.getElementById("antools").style;
-                toolstyle.display=toolstyle.display==="inline-block"?"none":"inline-block";
+            function toggleAN() {
+                var toolstyle = document.getElementById("antools").style;
+                toolstyle.display = toolstyle.display === "inline-block" ? "none" : "inline-block";
             }
-            function toggleNL(){
-                var toolstyle=document.getElementById("nltools").style;
-                toolstyle.display=toolstyle.display==="inline-block"?"none":"inline-block";
+            function toggleNL() {
+                var toolstyle = document.getElementById("nltools").style;
+                toolstyle.display = toolstyle.display === "inline-block" ? "none" : "inline-block";
             }
-            function handleOvly(event){
-                if(event.target.type==="color")
-                    document.getElementById("alpha").value=100;
+            function handleOvly(event) {
+                if (event.target.type === "color")
+                    document.getElementById("alpha").value = 100;
                 triangulate();
                 drawImage();
             }
@@ -1150,8 +1233,8 @@ if(!meta){
     <body onload="startup()">
         <div id="status">
             <select id="traf"></select>
-<!--            <input type="range" id="bright" min="1" max="20" step="0.2" value="1" onchange="drawImage()">
-            <div id="brightdesc">Brighten image:</div>-->
+            <!--            <input type="range" id="bright" min="1" max="20" step="0.2" value="1" onchange="drawImage()">
+                        <div id="brightdesc">Brighten image:</div>-->
             <input type="color" value="#0000FF" id="outline" onchange="handleOvly(event)">
             <div id="outlinedesc">Outline:</div>
             <input type="range" id="alpha" min="0" max="100" step="10" value="100" onchange="handleOvly(event)">
@@ -1172,12 +1255,12 @@ if(!meta){
                 <button onclick="load()">Load</button><button onclick="save()" id="btn_save">Save</button>
                 <input type="checkbox" id="show_triangles" onchange="drawImage()">Show triangles
             </div>
-<!--            <div id="toolsinner">
-                Marker color: <input type="color" id="crosscolor" value="#000000" onchange="drawImage()" style="height: 18px">
-                <button onclick="load()">Load</button><button onclick="save()" id="btn_save">Save</button>
-                Export to <button onclick="excel()">Excel</button> (this slice) or <button onclick="meshview()">MeshView</button> (all slices).
-                <input type="checkbox" id="show_triangles" onchange="drawImage()">Show triangles
-            </div>-->
+            <!--            <div id="toolsinner">
+                            Marker color: <input type="color" id="crosscolor" value="#000000" onchange="drawImage()" style="height: 18px">
+                            <button onclick="load()">Load</button><button onclick="save()" id="btn_save">Save</button>
+                            Export to <button onclick="excel()">Excel</button> (this slice) or <button onclick="meshview()">MeshView</button> (all slices).
+                            <input type="checkbox" id="show_triangles" onchange="drawImage()">Show triangles
+                        </div>-->
         </div>
         <canvas id="zoomcanvas" tabindex="1" onmouseover="event.target.focus()"></canvas>
         <canvas id="scroller" onclick="filmstrip.mclick(event)"></canvas>
@@ -1188,9 +1271,9 @@ if(!meta){
                 <li>Pan and zoom with mouse drag and mouse scroll wheel</li>
                 <li>Step backwards and forwards in series with left and right arrow keys<sup><sub>*</sub></sup></li>
                 <li>Quick set segmentation transparency to minimum and back using down and up arrow keys<sup><sub>*</sub></sup></li>
-<!--                <li>Press Space<sup><sub>*</sub></sup> to annotate points of interest. Atlas coordinates for points of interest can be exported to Excel or MeshView atlas viewer (requires Adobe Flash)</li>
-                <li>Press Delete<sup><sub>*</sub></sup> to remove an annotation marker under the mouse cursor</li>
-                <li>Drag an annotation marker to refine its position</li>-->
+                <!--                <li>Press Space<sup><sub>*</sub></sup> to annotate points of interest. Atlas coordinates for points of interest can be exported to Excel or MeshView atlas viewer (requires Adobe Flash)</li>
+                                <li>Press Delete<sup><sub>*</sub></sup> to remove an annotation marker under the mouse cursor</li>
+                                <li>Drag an annotation marker to refine its position</li>-->
             </ul>
             <a href="https://localizoom.readthedocs.io/" target="_blank">Documentation</a><br>
             <br>
