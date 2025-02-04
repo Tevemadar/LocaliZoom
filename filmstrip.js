@@ -75,7 +75,7 @@ var filmstrip = {};
             if (idx < 0)
                 idx = Math.floor(arry.length / 2);
             pos = Math.max(0, idx * 160 - canvaswidth / 2 + 72);
-            dispatchOuv(arry[idx]);
+//            dispatchOuv(arry[idx]);
 
             redraw();
 //            loadloop=0;
@@ -84,20 +84,28 @@ var filmstrip = {};
     }
     ;
     this.prev = function () {
+        if (active && active.previousSibling)
+            activate({target: active.previousSibling.firstElementChild});
+/*
         if (idx > 0) {
             idx--;
             pos = Math.max(0, idx * 160 - canvaswidth / 2 + 72);
             dispatchOuv(arry[idx]);
             redraw();
         }
+*/
     };
     this.next = function () {
+        if (active && active.nextSibling)
+            activate({target: active.nextSibling.firstElementChild});
+/*
         if (idx < arry.length - 1) {
             idx++;
             pos = Math.max(0, idx * 160 - canvaswidth / 2 + 72);
             dispatchOuv(arry[idx]);
             redraw();
         }
+*/
     };
 //    var loadloop;
 //    function load(){
@@ -121,9 +129,41 @@ var filmstrip = {};
         alpha = newalpha;
     };
     var idx;
+    const observer = new IntersectionObserver(loader);
+    const iconmap = new Map;
     function redraw() {
         if (!volumeready)
             return;
+
+        const scroller = document.getElementById("stripscroller");
+
+        for (const item of arry) {
+            const div = document.createElement("div");
+            observer.observe(div);
+            item.key = div;
+            iconmap.set(div, item);
+            div.className = "icon";
+            const icon = document.createElement("canvas");
+            const overlay = document.createElement("canvas");
+            overlay.onclick = activate;
+            overlay.style.opacity = 0.3; //!!
+            /*icon.className=*/overlay.className = "icnv";
+            const w = icon.width = overlay.width = 128;
+            const h = icon.height = overlay.height = 128 * item.h / item.w;
+            div.appendChild(icon);
+            div.appendChild(overlay);
+            scroller.appendChild(div);
+            const ovly = slice(item);
+//            const cnv=overlay;
+            for (const cnv of [icon, overlay]) {
+                const ctx = cnv.getContext("2d");
+                ctx.drawImage(ovly, 0, 0, w, h);
+            }
+        }
+        activate({target: arry[idx].key.firstElementChild});
+
+        return;
+
         start = Math.floor((pos - 128) / 160);
         if (start < 0)
             start = 0;
@@ -218,6 +258,19 @@ var filmstrip = {};
         ctx.fillRect(20 + pos * (canvaswidth - 20) / len, 0, (canvaswidth - 20) * (canvaswidth - 20) / len, 20);
     }
 
+    let active;
+    function activate(event) {
+        const target = event.target.parentElement;
+        if (active === target)
+            return;
+        if (active)
+            active.classList.remove("active");
+        active = target;
+        active.classList.add("active");
+        active.scrollIntoView({block: "center"});
+        dispatchOuv(iconmap.get(target));
+    }
+
     this.mwheel = function (event) {
         if (event.offsetX < 20) {
             alpha += event.deltaY > 0 ? 0.05 : -0.05;
@@ -249,4 +302,47 @@ var filmstrip = {};
         dispatchOuv(arry[idx]);
         redraw();
     };
+
+    this.fs_ovly = function (event) {
+        const opacity = event.target.valueAsNumber / 100;
+        for (const cnv of document.getElementsByClassName("icnv")) {
+            cnv.style.opacity = opacity;
+        }
+    };
+
+    function loader(entries) {
+        for (const entry of entries)
+            if (entry.isIntersecting) {
+                const div = entry.target;
+                observer.unobserve(div);
+                const image = iconmap.get(div);
+                loaders.DZILoader(image.id).then(async dzi => {
+//                item.icon=new XMLHttpRequest();
+//                item.icon.open("GET",locators.DZILocator(item.id));
+//                item.icon.onload=function(event){
+//                    var doc=new DOMParser().parseFromString(event.target.responseText,"text/xml").documentElement;
+                    var doc = new DOMParser().parseFromString(dzi, "text/xml").documentElement;
+                    var tilesize = parseInt(doc.getAttribute("TileSize"));
+                    var size = doc.getElementsByTagName("Size").item(0);
+                    var width = parseInt(size.getAttribute("Width"));
+                    var height = parseInt(size.getAttribute("Height"));
+                    var w = width, h = height, maxlevel = 0;
+                    while (w > 1 || h > 1) {
+                        w = (w + 1) >> 1;
+                        h = (h + 1) >> 1;
+                        maxlevel++;
+                    }
+//                    console.log(tilesize,width,height,item.id);
+                    var level = 0;
+                    while (width >= tilesize || height >= tilesize) {
+                        level++;
+                        width = (width + 1) >> 1;
+                        height = (height + 1) >> 1;
+                    }
+                    const icon = await loaders.TileLoader(image.id, maxlevel - level, 0, 0, doc.getAttribute("Format"));
+                    div.firstElementChild.getContext("2d").drawImage(icon, 0, 0, 128, height * 128 / width);
+//                    debugger;
+                });
+            }
+    }
 }).apply(filmstrip);
