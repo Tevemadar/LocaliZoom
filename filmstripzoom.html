@@ -26,7 +26,6 @@
             #coords{
                 display: inline-block;
                 width: 500px;
-                /*padding-right: 5px;*/
             }
             #outline{
                 height: 18px;
@@ -39,7 +38,7 @@
                 position: relative;
                 flex: auto;
                 display:flex;
-                background-color: red;
+                /*background-color: red;*/
                 overflow: hidden;
             }
             #scrollsep{
@@ -48,7 +47,7 @@
             }
             #main{
                 position: relative;
-                background: orange;
+                /*background: orange;*/
                 flex: 1 1 auto;
                 margin: 0;
                 padding: 0;
@@ -97,11 +96,6 @@
                 cursor: crosshair;
                 outline: none;
             }
-            /*            canvas#scroller{
-                            cursor: pointer;
-                        }*/
-            /*            #bright{float:right;height: 15px;width: 100px;}
-                        #brightdesc{float:right;padding-right: 5px;}*/
             #tools{
                 background: #F0F0F0;
                 height: 20px;
@@ -188,17 +182,15 @@
         <script>
             function fullscreen() {
                 var zc = document.getElementById("zoomcanvas");
-                var sc = document.getElementById("scroller");
-                sc.addEventListener("wheel", filmstrip.mwheel, true);
 
                 const main = document.getElementById("main");
 //                var help=document.getElementById("help");
 //                document.getElementById("metadata").style.top=help.style.top=zc.offsetTop+"px";
 //                help.style.left=window.innerWidth-520+"px";
 
-                filmstrip.setwidth(zc.width = sc.width = canvaswidth = main.offsetWidth/*window.innerWidth*/);
-                filmstrip.setheight(sc.height = 128 + 20);
-                zc.height = canvasheight = /*window.innerHeight*/main.offsetHeight - zc.offsetTop - 128 - 20;
+                zc.width = main.offsetWidth;
+                zc.height = main.offsetHeight;
+                filmstrip.resize();
                 if (zoomer)
                     zoomer.home();
             }
@@ -215,7 +207,7 @@
 //                   args[pair[0]]=pair[1] || true;
 //                });
                 if (args.view) {
-                    filmstrip.setalpha(0);
+                    document.getElementById("fs_alpha").value = 0;
                 }
                 args.view = !args.tools;
                 args.prev = true;
@@ -1322,7 +1314,6 @@
                                 </div>-->
                 </div>
                 <canvas id="zoomcanvas" tabindex="1" onmouseover="event.target.focus()"></canvas>
-                <canvas id="scroller" onclick="filmstrip.mclick(event)"></canvas>
                 <div id="metadata"></div>
             </div>
             <div id="scrollsep"></div>
