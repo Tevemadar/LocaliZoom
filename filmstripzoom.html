@@ -1286,9 +1286,9 @@
                         <div id="brightdesc">Brighten image:</div>-->
             <span id="coords"></span>
             Atlas opacity:
-            <input type="range" id="alpha" min="0" max="100" step="10" value="100" onchange="handleOvly(event)">
+            <input type="range" id="alpha" min="0" max="100" step="10" value="100" oninput="handleOvly(event)">
             Outline:
-            <input type="color" value="#0000FF" id="outline" onchange="handleOvly(event)">
+            <input type="color" value="#0000FF" id="outline" oninput="handleOvly(event)">
             <span id="helpbutton"><button onclick="toggleHelp()">?</button></span>
         </div>
         <div id="container">
