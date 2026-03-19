@@ -168,5 +168,5 @@ var filmstrip = {};
             }
     }
 
-    this.resize = () => active && active.scrollIntoView({block: "center"});
+    this.resize = () => active && active.scrollIntoView({behavior: "smooth", block: "nearest", container: "nearest"});
 }).apply(filmstrip);

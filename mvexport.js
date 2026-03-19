@@ -48,11 +48,38 @@ function meshview_cb() {
             .then(()=>popover("Data copied to clipboard."))
             .catch(ex=>alert(ex));
 }
+
+function meshview_json() {
+    allpoi[section_id] = poi;
+    const color = document.getElementById("ancolor").value.substring(1);
+    const r = parseInt(color.substring(0, 2), 16);
+    const g = parseInt(color.substring(2, 4), 16);
+    const b = parseInt(color.substring(4, 6), 16);
+    const alltriplets = [];
+    for (const section of filmstrip.getmeta()) {
+        const pois = allpoi[section.id] || [];
+        if (pois.length) {
+            const triplets = processSection(section, pois);
+            alltriplets.push(...triplets);
+        }
+    }
+    const name = args.series.substring(args.series.lastIndexOf("/") + 1, args.series.lastIndexOf("."));
+    const cloud = [{
+            name, r, g, b, triplets: alltriplets
+        }];
+    const url = URL.createObjectURL(new Blob([JSON.stringify(cloud)]));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name + "-mv.json";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 function popover(html){
     const p=document.getElementById("popover");
     p.innerHTML=html;
     p.showPopover();
-   setTimeout(()=>p.hidePopover(),2000);
+    setTimeout(()=>p.hidePopover(),2000);
 }
 
 function processSection(section,pois) {
