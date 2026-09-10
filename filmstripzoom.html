@@ -396,17 +396,13 @@
                                     var A = smallorg[triangle[0]];
                                     var B = smallorg[triangle[1]];
                                     var C = smallorg[triangle[2]];
-                                    var xx = Math.round(A[0] + (B[0] - A[0]) * uv1[0] + (C[0] - A[0]) * uv1[1]);
-                                    var yy = Math.round(A[1] + (B[1] - A[1]) * uv1[0] + (C[1] - A[1]) * uv1[1]);
-                                    var id = overlayorg[xx + yy * overlaywidth] || 0; //!!?? hack, todo 7608 (9?)
+                                    var xx = Math.max(Math.min(Math.round(A[0] + (B[0] - A[0]) * uv1[0] + (C[0] - A[0]) * uv1[1]), overlaywidth - 1), 0);
+                                    var yy = Math.max(Math.min(Math.round(A[1] + (B[1] - A[1]) * uv1[0] + (C[1] - A[1]) * uv1[1]), overlayheight - 1), 0);
+                                    var id = overlayorg[xx + yy * overlaywidth];
                                     overlaydata[i++] = id;
                                     if (id !== 0) {
                                         var l = atlas.labels[id];
-                                        //                                    try{
                                         odta[pi++] = l.r;
-                                        //                                }catch(e){
-                                        //                                    console.log(uv1,xx,yy,id);
-                                        //                                }
                                         odta[pi++] = l.g;
                                         odta[pi++] = l.b;
                                         odta[pi++] = 255;
